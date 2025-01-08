@@ -132,6 +132,13 @@ Tensor4D ConvolutionLayer::forward(const Tensor4D &input) {
             }
         }
     }
-
     return output;
+}
+
+/*
+ * backward pass through the convolutional layer
+ */
+Tensor4D ConvolutionLayer::backward(const Tensor4D &dOut) {
+    int batch_size = dOut.size();
+    if (batch_size == 0) throw std::invalid_argument(" is empty");
 }
