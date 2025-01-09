@@ -39,6 +39,8 @@ public:
 
     void zeroGrad();
 
+    size_t getNumParams() const;
+
     void setFilters(const Filters& new_filters);
     void setBiases(const std::vector<double>& new_biases);
 };

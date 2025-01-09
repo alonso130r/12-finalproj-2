@@ -51,3 +51,12 @@ void FullyConnectedLayer::zeroGrad() {
     }
     std::fill(dBiases.begin(), dBiases.end(), 0.0);
 }
+
+/*
+ * Get the number of parameters in the layer
+ */
+size_t FullyConnectedLayer::getNumParams() const {
+    size_t wParams = (size_t)out_features * (size_t)in_features;
+    size_t bParams = biases.size();
+    return wParams + bParams;
+}

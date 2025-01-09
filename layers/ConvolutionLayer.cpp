@@ -210,3 +210,24 @@ void ConvolutionLayer::setBiases(const std::vector<double>& new_biases) {
     }
     biases = new_biases;
 }
+
+void ConvolutionLayer::zeroGrad() {
+    dFilters.assign(out_channels, Tensor3D(in_channels,
+                                           std::vector<std::vector<double>> (filter_height, std::vector<double>(filter_width, 0.0))));
+    dBiases.assign(out_channels, 0.0);
+}
+
+size_t ConvolutionLayer::getNumParams() const {
+    size_t out_channels = filters.size();
+    if(out_channels == 0) return 0;
+    size_t in_channels  = filters[0].size();
+    size_t filter_height = filters[0][0].size();
+    size_t filter_width  = filters[0][0][0].size();
+
+    // param for filters
+    size_t filterParams = out_channels * in_channels * filter_height * filter_width;
+    // param for biases
+    size_t biasParams = biases.size();
+
+    return filterParams + biasParams;
+}

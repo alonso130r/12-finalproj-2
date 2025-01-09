@@ -30,6 +30,8 @@ public:
     void initializeParams();
 
     void zeroGrad();
+
+    size_t getNumParams() const;
 };
 
 

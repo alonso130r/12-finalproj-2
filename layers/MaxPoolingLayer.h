@@ -22,6 +22,7 @@ public:
     MaxPoolingLayer(int pool_height, int pool_width, int stride = 1, int padding = 0);
     std::shared_ptr<Tensor> forward(std::shared_ptr<Tensor> &input);
     std::shared_ptr<Tensor> backward(std::shared_ptr<Tensor> &dOut);
+    size_t getNumParams() const;
 };
 
 
