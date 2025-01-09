@@ -5,37 +5,57 @@
 #ifndef INC_12_FINALPROJ_2_AMSGRAD_H
 #define INC_12_FINALPROJ_2_AMSGRAD_H
 
-#include "ConvolutionLayer.h"
 #include <vector>
 #include <cmath>
+#include <algorithm>
+#include "ConvolutionLayer.h"
+#include "FullyConnectedLayer.h"
 
-class AMSGrad {
+/**
+ * @brief AdamW + AMSGrad optimizer.
+ *        - Adam with decoupled weight decay (AdamW)
+ *        - AMSGrad ensures a non-decreasing second-moment estimate v_hat.
+ */class AMSGrad {
 private:
-    // hyperparams
     double learning_rate;
     double beta1;
     double beta2;
     double epsilon;
-    double time_step;
+    double weight_decay; // decoupled weight decay factor
+    int time_step;
 
-    // filter moments
-    std::vector<std::vector<std::vector<std::vector<double>>>> m_filters; // first moment
-    std::vector<std::vector<std::vector<std::vector<double>>>> v_filters; // second moment (gradient squared)
-    std::vector<std::vector<std::vector<std::vector<double>>>> v_hat_filters; // max of v (AMSGrad specific)
+    bool initializedConv;
+    std::vector<std::vector<std::vector<std::vector<double>>>> m_filters;     // first moment
+    std::vector<std::vector<std::vector<std::vector<double>>>> v_filters;     // second moment
+    std::vector<std::vector<std::vector<std::vector<double>>>> v_hat_filters; // max of v
 
-    // bias moments
-    std::vector<double> m_biases; // first moment
-    std::vector<double> v_biases; // second moment (gradient squared)
-    std::vector<double> v_hat_biases; // max of v (AMSGrad specific)
+    std::vector<double> m_biases;
+    std::vector<double> v_biases;
+    std::vector<double> v_hat_biases;
+
+    bool initializedFC;
+    std::vector<std::vector<double>> m_fc_weights;
+    std::vector<std::vector<double>> v_fc_weights;
+    std::vector<std::vector<double>> v_hat_fc_weights;
+
+    std::vector<double> m_fc_biases;
+    std::vector<double> v_fc_biases;
+    std::vector<double> v_hat_fc_biases;
 
 public:
-    AMSGrad(double lr = 1e-3, double b1 = 0.9, double b2 = 0.999, double eps = 1e-8);
+    AMSGrad(double lr = 1e-3, double b1 = 0.9, double b2 = 0.999, double eps = 1e-8, double wd = 1e-2);
 
-    // initialize states based on parameters
-    void initialize(const ConvolutionLayer& layer);
+    // convolution
+    void initializeConv(const ConvolutionLayer& layer);
+    void update(ConvolutionLayer& layer,
+                const std::vector<std::vector<std::vector<std::vector<double>>>>& dFilters,
+                const std::vector<double>& dBiases);
 
-    // update the layer parameters
-    void update(ConvolutionLayer& layer, const std::vector<std::vector<std::vector<std::vector<double>>>>& dFilters, const std::vector<double>& dBiases);
+    // fully connected
+    void initializeFC(const FullyConnectedLayer& layer);
+    void update(FullyConnectedLayer& layer,
+                const std::vector<std::vector<double>>& dWeights,
+                const std::vector<double>& dBiases);
 };
 
 
