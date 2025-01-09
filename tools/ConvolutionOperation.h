@@ -8,7 +8,7 @@
 #include "Operation.h"
 #include "ConvolutionLayer.h"
 
-class ConvolutionOperation {
+class ConvolutionOperation : public Operation {
 private:
     ConvolutionLayer& convolutionLayer;
     Tensor input;
