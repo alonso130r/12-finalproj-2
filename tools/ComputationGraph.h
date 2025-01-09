@@ -15,9 +15,9 @@ private:
     std::vector<std::shared_ptr<Operation>> operations; // list of operations in the graph
 
 public:
-    void addOperation(std::shared_ptr<Operation> operation); // add an operation to the graph
-    Tensor forward(const Tensor &input); // perform a forward pass through the graph
-    void backward(const Tensor &loss_grad); // perform a backward pass through the graph
+    void addOperation(std::shared_ptr<Operation> &operation); // add an operation to the graph
+    Tensor forward(const std::shared_ptr<Tensor> &input); // perform a forward pass through the graph
+    void backward(const std::shared_ptr<Tensor> &loss_grad); // perform a backward pass through the graph
 };
 
 
