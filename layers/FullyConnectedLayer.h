@@ -12,7 +12,7 @@
 #include "Tensor.h"
 
 template <typename Type>
-class FullyConnectedLayer {
+class FullyConnectedLayer : public Layer<Type> {
     typedef std::vector<std::vector<Type>> WeightsMatrix;
 public:
     int in_features;

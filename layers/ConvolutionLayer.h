@@ -9,7 +9,7 @@
 #include "Tensor.h"
 
 template <typename Type>
-class ConvolutionLayer {
+class ConvolutionLayer : public Layer<Type> {
     typedef std::vector<std::vector<std::vector<Type>>> Tensor3D; // (channels, height, width)
     typedef std::vector<std::vector<std::vector<std::vector<Type>>>> Tensor4D; // (batch_size, channels, height, width)
     typedef std::vector<Tensor3D> Filters; // (out_channels, in_channels, filter_height, filter_width)

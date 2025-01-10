@@ -6,7 +6,7 @@
 #define INC_12_FINALPROJ_2_LAYER_H
 
 
-
+template <typename Type>
 class Layer {
 
 };

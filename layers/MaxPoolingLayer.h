@@ -11,7 +11,7 @@
 #include <memory>
 
 template <typename Type>
-class MaxPoolingLayer {
+class MaxPoolingLayer : public Layer<Type> {
 private:
     int pool_height;
     int pool_width;
