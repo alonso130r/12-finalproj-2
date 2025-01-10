@@ -8,11 +8,11 @@
 #include <memory>
 #include "Tensor.h"
 
-typedef std::vector<std::vector<std::vector<double>>> Tensor3D; // (channels, height, width)
-typedef std::vector<std::vector<std::vector<std::vector<double>>>> Tensor4D; // (batch_size, channels, height, width)
-typedef std::vector<Tensor3D> Filters; // (out_channels, in_channels, filter_height, filter_width)
-
+template <typename Type>
 class ConvolutionLayer {
+    typedef std::vector<std::vector<std::vector<Type>>> Tensor3D; // (channels, height, width)
+    typedef std::vector<std::vector<std::vector<std::vector<Type>>>> Tensor4D; // (batch_size, channels, height, width)
+    typedef std::vector<Tensor3D> Filters; // (out_channels, in_channels, filter_height, filter_width)
 public:
     int in_channels;
     int out_channels;
@@ -21,10 +21,10 @@ public:
     int stride;
     int padding;
     Filters filters;
-    std::vector<double> biases;
+    std::vector<Type> biases;
 
     Filters dFilters;
-    std::vector<double> dBiases;
+    std::vector<Type> dBiases;
 
     // cached pre-activation outputs for backpropagation
     Tensor4D pre_activation;
@@ -33,16 +33,18 @@ public:
 
     void initializeFilters();
 
-    std::shared_ptr<Tensor> forward(const std::shared_ptr<Tensor>& input);
+    std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>>& input);
 
-    void backward(const std::shared_ptr<Tensor>& dOut);
+    void backward(const std::shared_ptr<Tensor<Type>>& dOut);
 
     void zeroGrad();
 
     size_t getNumParams() const;
 
     void setFilters(const Filters& new_filters);
-    void setBiases(const std::vector<double>& new_biases);
+    void setBiases(const std::vector<Type>& new_biases);
 };
+
+#include "ConvolutionLayer.tpp"
 
 #endif // CONVOLUTION_LAYER_H

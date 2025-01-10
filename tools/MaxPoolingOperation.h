@@ -10,11 +10,10 @@
 #include <vector>
 #include <utility>
 
-typedef std::vector<std::vector<std::vector<double>>> Tensor3D; // (channels, height, width)
-typedef std::vector<std::vector<std::vector<std::vector<double>>>> Tensor4D; // (batch_size, channels, height, width)
-
-
-class MaxPoolingOperation : public Operation {
+template <typename Type>
+class MaxPoolingOperation<Type> : public Operation {
+    typedef std::vector<std::vector<std::vector<Type>>> Tensor3D; // (channels, height, width)
+    typedef std::vector<std::vector<std::vector<std::vector<Type>>>> Tensor4D; // (batch_size, channels, height, width)
 private:
     int pool_height;
     int pool_width;
@@ -27,10 +26,11 @@ private:
 public:
     MaxPoolingOperation(int pool_height, int pool_width, int stride = 1, int padding = 0);
 
-    Tensor forward(const Tensor &input) override;
+    Tensor<Type> forward(const Tensor<Type> &input) override;
 
-    void backward(Tensor &output_grad) override;
+    void backward(Tensor<Type> &output_grad) override;
 };
 
+#include "MaxPoolingOperation.tpp"
 
 #endif //INC_12_FINALPROJ_2_MAXPOOLINGOPERATION_H

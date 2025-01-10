@@ -10,11 +10,10 @@
 
 class Operation;
 
-typedef std::vector<std::vector<std::vector<double>>> Tensor3D; // (channels, height, width)
-typedef std::vector<std::vector<std::vector<std::vector<double>>>> Tensor4D; // (batch_size, channels, height, width)
-
-
+template <typename Type>
 class Tensor {
+    typedef std::vector<std::vector<std::vector<Type>>> Tensor3D; // (channels, height, width)
+    typedef std::vector<std::vector<std::vector<std::vector<Type>>>> Tensor4D; // (batch_size, channels, height, width)
 public:
     Tensor4D data;
     Tensor4D grad;
@@ -26,5 +25,6 @@ public:
     void zeroGrad(); // to clear the gradients
 };
 
+#include "Tensor.tpp"
 
 #endif //INC_12_FINALPROJ_2_TENSOR_H

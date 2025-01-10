@@ -8,25 +8,27 @@
 #include <ctime>
 #include <stdexcept>
 
-FullyConnectedLayer::FullyConnectedLayer(int in_features, int out_features) : in_features(in_features), out_features(out_features) {
+template <typename Type>
+FullyConnectedLayer<Type>::FullyConnectedLayer(int in_features, int out_features) : in_features(in_features), out_features(out_features) {
     initializeParams();
 }
 
 /*
  * Initialize the weights and biases with random values using He initialization
  */
-void FullyConnectedLayer::initializeParams() {
+template <typename Type>
+void FullyConnectedLayer<Type>::initializeParams() {
     // calculate fan in and standard deviation
-    double fan_in = static_cast<double>(in_features);
-    double std_dev = sqrt(2.0 / fan_in);
+    Type fan_in = static_cast<Type>(in_features);
+    Type std_dev = sqrt(2.0 / fan_in);
 
     // initialize random generators (mersenne twister engine)
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::normal_distribution<double> dist(0.0, std_dev);
+    std::normal_distribution<Type> dist(0.0, std_dev);
 
     // resize weights and biases
-    weights.resize(out_features, std::vector<double>(in_features, 0.0));
+    weights.resize(out_features, std::vector<Type>(in_features, 0.0));
     biases.resize(out_features, 0.0);
 
     // initialize weights with He initialization
@@ -38,14 +40,15 @@ void FullyConnectedLayer::initializeParams() {
     }
 
     // initialize gradients to zero
-    dWeights.resize(out_features, std::vector<double>(in_features, 0.0));
+    dWeights.resize(out_features, std::vector<Type>(in_features, 0.0));
     dBiases.resize(out_features, 0.0);
 }
 
 /*
  * Zero the gradients
  */
-void FullyConnectedLayer::zeroGrad() {
+template <typename Type>
+void FullyConnectedLayer<Type>::zeroGrad() {
     for(int i = 0; i < out_features; ++i) {
         std::fill(dWeights[i].begin(), dWeights[i].end(), 0.0);
     }
@@ -55,7 +58,8 @@ void FullyConnectedLayer::zeroGrad() {
 /*
  * Get the number of parameters in the layer
  */
-size_t FullyConnectedLayer::getNumParams() const {
+template <typename Type>
+size_t FullyConnectedLayer<Type>::getNumParams() const {
     size_t wParams = (size_t)out_features * (size_t)in_features;
     size_t bParams = biases.size();
     return wParams + bParams;

@@ -10,15 +10,17 @@
 #include <vector>
 #include <memory>
 
+template <typename Type>
 class ComputationGraph {
 private:
-    std::vector<std::shared_ptr<Operation>> operations; // list of operations in the graph
+    std::vector<std::shared_ptr<Operation<Type>>> operations; // list of operations in the graph
 
 public:
-    void addOperation(std::shared_ptr<Operation> &operation); // add an operation to the graph
-    Tensor forward(const std::shared_ptr<Tensor> &input); // perform a forward pass through the graph
-    void backward(const std::shared_ptr<Tensor> &loss_grad); // perform a backward pass through the graph
+    void addOperation(std::shared_ptr<Operation<Type>> &operation); // add an operation to the graph
+    Tensor<Type> forward(const std::shared_ptr<Tensor<Type>> &input); // perform a forward pass through the graph
+    void backward(const std::shared_ptr<Tensor<Type>> &loss_grad); // perform a backward pass through the graph
 };
 
+#include "ComputationGraph.tpp"
 
 #endif //INC_12_FINALPROJ_2_COMPUTATIONGRAPH_H

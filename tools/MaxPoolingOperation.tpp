@@ -6,11 +6,12 @@
 #include <algorithm>
 #include <limits>
 
-MaxPoolingOperation::MaxPoolingOperation(int pool_height, int pool_width, int stride, int padding) :
-        pool_height(pool_height), pool_width(pool_width), stride(stride), padding(padding)
-        {}
+template <typename Type>
+MaxPoolingOperation<Type>::MaxPoolingOperation(int pool_height, int pool_width, int stride, int padding) :
+        pool_height(pool_height), pool_width(pool_width), stride(stride), padding(padding) {}
 
-Tensor MaxPoolingOperation::forward(const Tensor &input) {
+template <typename Type
+Tensor<Type> MaxPoolingOperation<Type>::forward(const Tensor<Type> &input) {
     int batch_size = input.shape[0];
     int channels = input.data[0].size();
     int input_height = input.data[0][0].size();
@@ -39,7 +40,7 @@ Tensor MaxPoolingOperation::forward(const Tensor &input) {
                     h_start = std::max(h_start, 0);
                     w_start = std::max(w_start, 0);
 
-                    double max_val = -std::numeric_limits<double>::infinity();
+                    Type max_val = -std::numeric_limits<Type>::infinity();
                     std::pair<int, int> max_pos = {h_start, w_start};
 
                     // iterate over the pooling window to find the max value and its position
@@ -62,7 +63,8 @@ Tensor MaxPoolingOperation::forward(const Tensor &input) {
     return output;
 }
 
-std::shared_ptr<Tensor> MaxPoolingOperation::backward(const std::shared_ptr<Tensor>& output_grad) {
+template <typename Type>
+std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::shared_ptr<Tensor<Type>>& output_grad) {
     if(this->inputs.empty()) {
         throw std::runtime_error("MaxPoolingOperation has no input tensors stored. Perform forward pass before backward.");
     }
@@ -84,8 +86,8 @@ std::shared_ptr<Tensor> MaxPoolingOperation::backward(const std::shared_ptr<Tens
     int input_width_calc = stride * (out_width - 1) + pool_width - 2 * padding;
 
     // initialize dInput_padded with zeros
-    Tensor4D dInput_padded(batch_size, Tensor3D(channels, std::vector<std::vector<double>>(
-            input_height_calc + 2 * padding, std::vector<double>(input_width_calc + 2 * padding, 0.0))));
+    Tensor4D dInput_padded(batch_size, Tensor3D(channels, std::vector<std::vector<Type>>(
+            input_height_calc + 2 * padding, std::vector<Type>(input_width_calc + 2 * padding, 0.0))));
 
     // gradients based on max_indices
     for(int n = 0; n < batch_size; ++n) {
@@ -106,8 +108,8 @@ std::shared_ptr<Tensor> MaxPoolingOperation::backward(const std::shared_ptr<Tens
 
     // remove padding from dInput if necessary
     if(padding > 0) {
-        Tensor4D dInput_unpadded(batch_size, Tensor3D(channels, std::vector<std::vector<double>>(
-                input_height_calc, std::vector<double>(input_width_calc, 0.0))));
+        Tensor4D dInput_unpadded(batch_size, Tensor3D(channels, std::vector<std::vector<Type>>(
+                input_height_calc, std::vector<Type>(input_width_calc, 0.0))));
 
         for(int n = 0; n < batch_size; ++n) {
             for(int c = 0; c < channels; ++c) {
@@ -133,8 +135,8 @@ std::shared_ptr<Tensor> MaxPoolingOperation::backward(const std::shared_ptr<Tens
         auto dInput_tensor = std::make_shared<Tensor>();
         dInput_tensor->data = dInput_unpadded;
         dInput_tensor->grad = Tensor4D(dInput_unpadded.size(), Tensor3D(dInput_unpadded[0].size(),
-                                                                        std::vector<std::vector<double>>(dInput_unpadded[0][0].size(),
-                                                                                std::vector<double>(dInput_unpadded[0][0][0].size(), 0.0))));
+                                                                        std::vector<std::vector<Type>>(dInput_unpadded[0][0].size(),
+                                                                                std::vector<Type>(dInput_unpadded[0][0][0].size(), 0.0))));
 
         return dInput_tensor;
     }
@@ -153,8 +155,8 @@ std::shared_ptr<Tensor> MaxPoolingOperation::backward(const std::shared_ptr<Tens
         auto dInput_tensor = std::make_shared<Tensor>();
         dInput_tensor->data = dInput_padded;
         dInput_tensor->grad = Tensor4D(dInput_padded.size(), Tensor3D(dInput_padded[0].size(),
-                                                                      std::vector<std::vector<double>>(dInput_padded[0][0].size(),
-                                                                              std::vector<double>(dInput_padded[0][0][0].size(), 0.0))));
+                                                                      std::vector<std::vector<Type>>(dInput_padded[0][0].size(),
+                                                                              std::vector<Type>(dInput_padded[0][0][0].size(), 0.0))));
 
         return dInput_tensor;
     }

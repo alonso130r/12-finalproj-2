@@ -6,15 +6,17 @@
 #include <stdexcept>
 #include <algorithm>
 
-FullyConnectedOperation::FullyConnectedOperation(FullyConnectedLayer& layer, bool is_activated): fcLayer(layer), is_activated(is_activated) {}
+template <typename Type>
+FullyConnectedOperation<Type>::FullyConnectedOperation(FullyConnectedLayer<Type>& layer, bool is_activated): fcLayer(layer), is_activated(is_activated) {}
 
-std::vector<double> FullyConnectedOperation::flattenSample(const Tensor4D& data, int n) {
+template <typename Type>
+std::vector<Type> FullyConnectedOperation<Type>::flattenSample(const Tensor4D& data, int n) {
     // channels = data[0].size(), height = data[0][0].size(), width = data[0][0][0].size()
     int channels = data[n].size();
     int height = data[n][0].size();
     int width = data[n][0][0].size();
 
-    std::vector<double> flattened(channels * height * width, 0.0);
+    std::vector<Type> flattened(channels * height * width, 0.0);
     int idx = 0;
     for(int c = 0; c < channels; ++c) {
         for(int h = 0; h < height; ++h) {
@@ -26,7 +28,8 @@ std::vector<double> FullyConnectedOperation::flattenSample(const Tensor4D& data,
     return flattened;
 }
 
-std::shared_ptr <Tensor> FullyConnectedOperation::forward(const std::vector <std::shared_ptr<Tensor>> &inputs) {
+template <typename Type>
+std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::forward(const std::vector <std::shared_ptr<Tensor<Type>>> &inputs) {
     if(inputs.size() != 1) {
         throw std::invalid_argument("FullyConnectedOperation expects exactly one input tensor.");
     }
@@ -49,10 +52,10 @@ std::shared_ptr <Tensor> FullyConnectedOperation::forward(const std::vector <std
 
     // for each sample in the batch
     for(int n = 0; n < batch_size; ++n) {
-        std::vector<double> x = flattenSample(input->data, n);
+        std::vector<Type> x = flattenSample(input->data, n);
         // multiply
         for(int out_i = 0; out_i < fcLayer.out_features; ++out_i) {
-            double sum = 0.0;
+            Type sum = 0.0;
             for(int in_j = 0; in_j < fcLayer.in_features; ++in_j) {
                 sum += fcLayer.weights[out_i][in_j] * x[in_j];
             }
@@ -65,7 +68,8 @@ std::shared_ptr <Tensor> FullyConnectedOperation::forward(const std::vector <std
     return output;
 }
 
-std::shared_ptr <Tensor> FullyConnectedOperation::backward(const std::shared_ptr <Tensor> &output_grad) {
+template <typename Type>
+std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::backward(const std::shared_ptr <Tensor<Type>> &output_grad) {
     if(this->inputs.empty()) {
         throw std::runtime_error("FullyConnectedOperation has no stored inputs. Perform forward pass first.");
     }
@@ -85,17 +89,17 @@ std::shared_ptr <Tensor> FullyConnectedOperation::backward(const std::shared_ptr
     // for each sample in the batch
     for(int n = 0; n < batch_size; ++n) {
         // flatten the sample input
-        std::vector<double> x = flattenSample(input->data, n);
+        std::vector<Type> x = flattenSample(input->data, n);
 
         // out_grad: shape (out_features), i.e., output_grad->data[n][out_i][0][0]
-        std::vector<double> grad_out(fcLayer.out_features, 0.0);
+        std::vector<Type> grad_out(fcLayer.out_features, 0.0);
         for(int out_i = 0; out_i < fcLayer.out_features; ++out_i) {
             grad_out[out_i] = output_grad->grad[n][out_i][0][0];
         }
 
         // compute gradients w.r.t. W, b, and x
         for(int out_i = 0; out_i < fcLayer.out_features; ++out_i) {
-            double go = grad_out[out_i];  // gradient w.r.t. output neuron out_i
+            Type go = grad_out[out_i];  // gradient w.r.t. output neuron out_i
             // bias gradient
             fcLayer.dBiases[out_i] += go;
 

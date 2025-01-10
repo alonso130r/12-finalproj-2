@@ -8,16 +8,18 @@
 #include "Operation.h"
 #include "ConvolutionLayer.h"
 
-class ConvolutionOperation : public Operation {
+template <typename Type>
+class ConvolutionOperation : public Operation<Type> {
 private:
-    ConvolutionLayer& convolutionLayer;
-    Tensor input;
+    ConvolutionLayer<Type>& convolutionLayer;
+    Tensor<Type> input;
 
 public:
     ConvolutionOperation(ConvolutionLayer& convolutionLayer);
-    Tensor forward(const Tensor& input) override;
-    void backward(Tensor& output_grad) override;
+    Tensor<Type> forward(const Tensor<Type>& input) override;
+    void backward(Tensor<Type>& output_grad) override;
 };
 
+#include "ConvolutionOperation.tpp"
 
 #endif //INC_12_FINALPROJ_2_CONVOLUTIONOPERATION_H

@@ -11,19 +11,19 @@
 #include <cmath>
 #include "Tensor.h"
 
-typedef std::vector<std::vector<double>> WeightsMatrix;
-
+template <typename Type>
 class FullyConnectedLayer {
+    typedef std::vector<std::vector<Type>> WeightsMatrix;
 public:
     int in_features;
     int out_features;
 
     WeightsMatrix weights;
-    std::vector<double> biases;
+    std::vector<Type> biases;
 
     // gradients
     WeightsMatrix dWeights;
-    std::vector<double> dBiases;
+    std::vector<Type> dBiases;
 
     FullyConnectedLayer(int in_features, int out_features);
 
@@ -34,5 +34,6 @@ public:
     size_t getNumParams() const;
 };
 
+#include "FullyConnectedLayer.tpp"
 
 #endif //INC_12_FINALPROJ_2_FULLYCONNECTEDLAYER_H

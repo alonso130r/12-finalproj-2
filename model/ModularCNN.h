@@ -21,15 +21,16 @@
  *        the structure (layer types + shapes) up front, then we build a
  *        ComputationGraph from it.
  */
+template <typename Type>
 class ModularCNN {
 private:
     // store the sequence of layers
     std::vector<std::string> layerTypes; // "conv", "pool", "fc", etc.
 
 public:
-    std::vector<ConvolutionLayer> convLayers;
-    std::vector<MaxPoolingLayer> poolLayers;
-    std::vector<FullyConnectedLayer> fcLayers;
+    std::vector<ConvolutionLayer<Type>> convLayers;
+    std::vector<MaxPoolingLayer<Type>> poolLayers;
+    std::vector<FullyConnectedLayer<Type>> fcLayers;
 
     ComputationGraph graph;
 
@@ -37,12 +38,13 @@ public:
 
     void buildGraph();
 
-    std::shared_ptr<Tensor> forward(const std::shared_ptr<Tensor>& input);
+    std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>>& input);
 
     void zeroGrad();
 
     size_t getTotalParams() const;
 };
 
+#include "ModularCNN.tpp"
 
 #endif //INC_12_FINALPROJ_2_MODULARCNN_H

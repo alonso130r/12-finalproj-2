@@ -6,7 +6,8 @@
 #include <stdexcept>
 #include <iostream>
 
-ModularCNN::ModularCNN(const std::vector<LayerConfig>& configs) {
+template <typename Type>
+ModularCNN<Type>::ModularCNN(const std::vector<LayerConfig>& configs) {
     // parse each config and create the corresponding internal layer
     size_t convCount = 0;
     size_t poolCount = 0;
@@ -46,9 +47,10 @@ ModularCNN::ModularCNN(const std::vector<LayerConfig>& configs) {
     buildGraph();
 }
 
-void ModularCNN::buildGraph() {
+template <typename Type>
+void ModularCNN<Type>::buildGraph() {
     // clear existing ops in case we're re-building
-    graph = ComputationGraph();
+    graph = ComputationGraph<Type>();
 
     size_t convIndex = 0;
     size_t poolIndex = 0;
@@ -61,7 +63,7 @@ void ModularCNN::buildGraph() {
             if(convIndex >= convLayers.size()) {
                 throw std::runtime_error("Not enough convLayers for 'conv' in buildGraph");
             }
-            graph.addOperation(std::make_shared<ConvolutionOperation>(convLayers[convIndex]));
+            graph.addOperation(std::make_shared<ConvolutionOperation<Type>>(convLayers[convIndex]));
             convIndex++;
         }
         else if(t == "pool") {
@@ -69,7 +71,7 @@ void ModularCNN::buildGraph() {
                 throw std::runtime_error("Not enough poolLayers for 'pool'");
             }
             auto &pl = poolLayers[poolIndex];
-            graph.addOperation(std::make_shared<MaxPoolingOperation>(
+            graph.addOperation(std::make_shared<MaxPoolingOperation<Type>>(
                     pl.pool_height, pl.pool_width, pl.stride, pl.padding));
             poolIndex++;
         }
@@ -77,7 +79,7 @@ void ModularCNN::buildGraph() {
             if(fcIndex >= fcLayers.size()) {
                 throw std::runtime_error("Not enough fcLayers for 'fc'");
             }
-            graph.addOperation(std::make_shared<FullyConnectedOperation>(fcLayers[fcIndex]));
+            graph.addOperation(std::make_shared<FullyConnectedOperation<Type>>(fcLayers[fcIndex]));
             fcIndex++;
         }
         else {
@@ -86,11 +88,13 @@ void ModularCNN::buildGraph() {
     }
 }
 
-std::shared_ptr<Tensor> ModularCNN::forward(const std::shared_ptr<Tensor>& input) {
+template <typename Type>
+std::shared_ptr<Tensor<Type>> ModularCNN<Type>::forward(const std::shared_ptr<Tensor<Type>>& input) {
     return graph.forward(input);
 }
 
-void ModularCNN::zeroGrad() {
+template <typename Type>
+void ModularCNN<Type>::zeroGrad() {
     // zero conv
     for (auto &c: convLayers) {
         c.zeroGrad();
@@ -101,7 +105,8 @@ void ModularCNN::zeroGrad() {
     }
 }
 
-size_t ModularCNN::getTotalParams() const {
+template <typename Type>
+size_t ModularCNN<Type>::getTotalParams() const {
     size_t total = 0;
     // conv
     for(const auto &c : convLayers) {

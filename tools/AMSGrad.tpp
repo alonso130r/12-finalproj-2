@@ -7,7 +7,8 @@
 #include <stdexcept>
 #include <algorithm>
 
-AMSGrad::AMSGrad(double lr, double b1, double b2,
+template <typename Type>
+AMSGrad<Type>::AMSGrad(double lr, double b1, double b2,
                            double eps, double wd)
         : learning_rate(lr),
           beta1(b1),
@@ -19,7 +20,8 @@ AMSGrad::AMSGrad(double lr, double b1, double b2,
           initializedFC(false)
 {}
 
-void AMSGrad::initializeConv(const ConvolutionLayer &layer) {
+template <typename Type>
+void AMSGrad<Type>::initializeConv(const ConvolutionLayer<Type> &layer) {
     int out_channels  = layer.filters.size();
     if(out_channels == 0) return;
     int in_channels   = layer.filters[0].size();
@@ -27,9 +29,9 @@ void AMSGrad::initializeConv(const ConvolutionLayer &layer) {
     int filter_width  = layer.filters[0][0][0].size();
 
     m_filters.resize(out_channels,
-                     std::vector<std::vector<std::vector<double>>>(
-            in_channels, std::vector<std::vector<double>>(
-                    filter_height, std::vector<double>(filter_width, 0.0))));
+                     std::vector<std::vector<std::vector<Type>>>(
+            in_channels, std::vector<std::vector<Type>>(
+                    filter_height, std::vector<Type>(filter_width, 0.0))));
     v_filters  = m_filters;
     v_hat_filters = m_filters;
 
@@ -40,11 +42,12 @@ void AMSGrad::initializeConv(const ConvolutionLayer &layer) {
     initializedConv = true;
 }
 
-void AMSGrad::initializeFC(const FullyConnectedLayer &layer) {
+template <typename Type>
+void AMSGrad<Type>::initializeFC(const FullyConnectedLayer<Type> &layer) {
     int out_features = layer.out_features;
     int in_features  = layer.in_features;
 
-    m_fc_weights.resize(out_features, std::vector<double>(in_features, 0.0));
+    m_fc_weights.resize(out_features, std::vector<Type>(in_features, 0.0));
     v_fc_weights = m_fc_weights;
     v_hat_fc_weights = m_fc_weights;
 
@@ -58,9 +61,10 @@ void AMSGrad::initializeFC(const FullyConnectedLayer &layer) {
 /**
  * @brief AdamWAMSGrad update for FullyConnectedLayer
  */
-void AMSGrad::update(ConvolutionLayer &layer,
-                     const std::vector <std::vector<std::vector < std::vector < double>>>> &dFilters,
-                     const std::vector<double> &dBiases) {
+template <typename Type>
+void AMSGrad<Type>::update(ConvolutionLayer<Type> &layer,
+                     const std::vector <std::vector<std::vector < std::vector < Type>>>> &dFilters,
+                     const std::vector<Type> &dBiases) {
     if(!initializedConv) {
         initializeConv(layer);
     }
@@ -77,7 +81,7 @@ void AMSGrad::update(ConvolutionLayer &layer,
         for (int c = 0; c < in_channels; ++c) {
             for (int h = 0; h < filter_height; ++h) {
                 for (int w = 0; w < filter_width; ++w) {
-                    double g = dFilters[f][c][h][w];
+                    Type g = dFilters[f][c][h][w];
                     // Adam moments
                     m_filters[f][c][h][w] = beta1*m_filters[f][c][h][w] + (1 - beta1)*g;
                     v_filters[f][c][h][w] = beta2*v_filters[f][c][h][w] + (1 - beta2)*(g*g);
@@ -86,8 +90,8 @@ void AMSGrad::update(ConvolutionLayer &layer,
                     std::max(v_hat_filters[f][c][h][w], v_filters[f][c][h][w]);
 
                     // bias corrections
-                    double m_hat = m_filters[f][c][h][w] / (1 - std::pow(beta1, time_step));
-                    double v_hat_corr = v_hat_filters[f][c][h][w] / (1 - std::pow(beta2, time_step));
+                    Type m_hat = m_filters[f][c][h][w] / (1 - std::pow(beta1, time_step));
+                    Type v_hat_corr = v_hat_filters[f][c][h][w] / (1 - std::pow(beta2, time_step));
 
                     // decoupled weight decay: param *= (1 - lr*wd)
                     layer.filters[f][c][h][w] *= (1.0 - learning_rate*weight_decay);
@@ -98,13 +102,13 @@ void AMSGrad::update(ConvolutionLayer &layer,
             }
         }
         // bias
-        double gb = dBiases[f];
+        Type gb = dBiases[f];
         m_biases[f] = beta1*m_biases[f] + (1 - beta1)*gb;
         v_biases[f] = beta2*v_biases[f] + (1 - beta2)*gb*gb;
         v_hat_biases[f] = std::max(v_hat_biases[f], v_biases[f]);
 
-        double m_hat_b = m_biases[f] / (1 - std::pow(beta1, time_step));
-        double v_hat_corr_b = v_hat_biases[f] / (1 - std::pow(beta2, time_step));
+        Type m_hat_b = m_biases[f] / (1 - std::pow(beta1, time_step));
+        Type v_hat_corr_b = v_hat_biases[f] / (1 - std::pow(beta2, time_step));
 
         // decoupled weight decay for bias (often zero):
         layer.biases[f] *= (1.0 - learning_rate*weight_decay);
@@ -116,9 +120,10 @@ void AMSGrad::update(ConvolutionLayer &layer,
 /**
  * @brief AdamWAMSGrad update for FullyConnectedLayer
  */
-void AMSGrad::update(FullyConnectedLayer &layer,
-                     const std::vector <std::vector<double>> &dWeights,
-                     const std::vector<double> &dBiases) {
+template <typename Type>
+void AMSGrad<Type>::update(FullyConnectedLayer<Type> &layer,
+                     const std::vector <std::vector<Type>> &dWeights,
+                     const std::vector<Type> &dBiases) {
     if(!initializedFC) {
         initializeFC(layer);
     }
@@ -129,15 +134,15 @@ void AMSGrad::update(FullyConnectedLayer &layer,
 
     for(int i = 0; i < out_features; ++i) {
         for(int j = 0; j < in_features; ++j) {
-            double g = dWeights[i][j];
+            Type g = dWeights[i][j];
             // Adam moments
             m_fc_weights[i][j] = beta1*m_fc_weights[i][j] + (1 - beta1)*g;
             v_fc_weights[i][j] = beta2*v_fc_weights[i][j] + (1 - beta2)*(g*g);
             // AMSGrad
             v_hat_fc_weights[i][j] = std::max(v_hat_fc_weights[i][j], v_fc_weights[i][j]);
 
-            double m_hat = m_fc_weights[i][j] / (1 - std::pow(beta1, time_step));
-            double v_hat_corr = v_hat_fc_weights[i][j] / (1 - std::pow(beta2, time_step));
+            Type m_hat = m_fc_weights[i][j] / (1 - std::pow(beta1, time_step));
+            Type v_hat_corr = v_hat_fc_weights[i][j] / (1 - std::pow(beta2, time_step));
 
             // decoupled weight decay
             layer.weights[i][j] *= (1.0 - learning_rate*weight_decay);
@@ -145,13 +150,13 @@ void AMSGrad::update(FullyConnectedLayer &layer,
             // final update
             layer.weights[i][j] -= learning_rate*(m_hat / (std::sqrt(v_hat_corr) + epsilon));
         }
-        double gb = dBiases[i];
+        Type gb = dBiases[i];
         m_fc_biases[i] = beta1*m_fc_biases[i] + (1 - beta1)*gb;
         v_fc_biases[i] = beta2*v_fc_biases[i] + (1 - beta2)*gb*gb;
         v_hat_fc_biases[i] = std::max(v_hat_fc_biases[i], v_fc_biases[i]);
 
-        double m_hat_b = m_fc_biases[i] / (1 - std::pow(beta1, time_step));
-        double v_hat_corr_b = v_hat_fc_biases[i] / (1 - std::pow(beta2, time_step));
+        Type m_hat_b = m_fc_biases[i] / (1 - std::pow(beta1, time_step));
+        Type v_hat_corr_b = v_hat_fc_biases[i] / (1 - std::pow(beta2, time_step));
 
         // decoupled weight decay for bias
         layer.biases[i] *= (1.0 - learning_rate*weight_decay);

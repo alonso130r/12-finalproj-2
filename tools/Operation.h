@@ -9,15 +9,16 @@
 #include <vector>
 #include <memory>
 
+template <typename Type>
 class Operation {
 public:
-    std::vector<std::shared_ptr<Tensor>> inputs;
+    std::vector<std::shared_ptr<Tensor<Type>>> inputs;
 
     virtual ~Operation() = default;
 
-    virtual std::shared_ptr<Tensor> forward(const std::vector<std::shared_ptr<Tensor>>& inputs) = 0;
+    virtual std::shared_ptr<Tensor<Type>> forward(const std::vector<std::shared_ptr<Tensor<Type>>>& inputs) = 0;
 
-    virtual std::shared_ptr<Tensor> backward(const std::shared_ptr<Tensor>& output_grad) = 0;
+    virtual std::shared_ptr<Tensor<Type>> backward(const std::shared_ptr<Tensor<Type>>& output_grad) = 0;
 };
 
 

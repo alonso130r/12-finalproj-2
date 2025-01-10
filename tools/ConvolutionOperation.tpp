@@ -4,15 +4,18 @@
 
 #include "ConvolutionOperation.h"
 
-ConvolutionOperation::ConvolutionOperation(ConvolutionLayer& layer) : convLayer(layer) {}
+template <typename Type>
+ConvolutionOperation<Type>::ConvolutionOperation(ConvolutionLayer<Type>& layer) : convLayer(layer) {}
 
-Tensor ConvolutionOperation::forward(const Tensor& input_tensor) {
+template <typename Type>
+Tensor<Type> ConvolutionOperation<Type>::forward(const Tensor<Type>& input_tensor) {
     input = input_tensor; // cache input for backpropagation
-    Tensor output = convLayer.forward(input.data); // perform convolution
+    Tensor<Type> output = convLayer.forward(input.data); // perform convolution
     return output;
 }
 
-void ConvolutionOperation::backward(Tensor& output_grad) {
+template <typename Type>
+void ConvolutionOperation<Type>::backward(Tensor<Type>& output_grad) {
     Tensor4D dInput = convLayer.backward(output_grad.data);
 
     // accumulate gradients
