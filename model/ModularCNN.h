@@ -2,18 +2,22 @@
 // Created by Vijay Goyal on 2025-01-09.
 //
 
+
+#ifndef INC_12_FINALPROJ_2_MODULARCNN_H
+#define INC_12_FINALPROJ_2_MODULARCNN_H
+
 #include <vector>
 #include <string>
 #include <memory>
-#include "LayerConfig.h"
-#include "ConvolutionLayer.h"
-#include "MaxPoolingLayer.h"
-#include "FullyConnectedLayer.h"
-#include "ComputationGraph.h"
-#include "ConvolutionOperation.h"
-#include "MaxPoolingOperation.h"
-#include "FullyConnectedOperation.h"
-#include "Tensor.h"
+#include "../tools/LayerConfig.h"
+#include "../layers/ConvolutionLayer.h"
+#include "../layers/MaxPoolingLayer.h"
+#include "../layers/FullyConnectedLayer.h"
+#include "../tools/ComputationGraph.h"
+#include "../tools/ConvolutionOperation.h"
+#include "../tools/MaxPoolingOperation.h"
+#include "../tools/FullyConnectedOperation.h"
+#include "../tools/Tensor.h"
 
 /**
  * @brief A fully modular CNN class that allows specifying an arbitrary sequence
@@ -32,7 +36,7 @@ public:
     std::vector<MaxPoolingLayer<Type>> poolLayers;
     std::vector<FullyConnectedLayer<Type>> fcLayers;
 
-    ComputationGraph graph;
+    ComputationGraph<Type> graph;
 
     ModularCNN(const std::vector<LayerConfig>& configs);
 

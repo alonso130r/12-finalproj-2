@@ -32,9 +32,9 @@ public:
 
     void zeroGrad();
 
-    size_t getNumParams() const;
+    [[nodiscard]] size_t getNumParams() const;
 };
 
-#include "FullyConnectedLayer.tpp"
+//#include "FullyConnectedLayer.tpp"
 
 #endif //INC_12_FINALPROJ_2_FULLYCONNECTEDLAYER_H

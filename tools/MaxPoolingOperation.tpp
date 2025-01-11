@@ -10,7 +10,7 @@ template <typename Type>
 MaxPoolingOperation<Type>::MaxPoolingOperation(int pool_height, int pool_width, int stride, int padding) :
         pool_height(pool_height), pool_width(pool_width), stride(stride), padding(padding) {}
 
-template <typename Type
+template <typename Type>
 Tensor<Type> MaxPoolingOperation<Type>::forward(const Tensor<Type> &input) {
     int batch_size = input.shape[0];
     int channels = input.data[0].size();
@@ -64,7 +64,7 @@ Tensor<Type> MaxPoolingOperation<Type>::forward(const Tensor<Type> &input) {
 }
 
 template <typename Type>
-std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::shared_ptr<Tensor<Type>>& output_grad) {
+std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(std::shared_ptr<Tensor<Type>>& output_grad) {
     if(this->inputs.empty()) {
         throw std::runtime_error("MaxPoolingOperation has no input tensors stored. Perform forward pass before backward.");
     }
@@ -152,7 +152,7 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::sha
             }
         }
 
-        auto dInput_tensor = std::make_shared<Tensor>();
+        auto dInput_tensor = std::make_shared<Tensor<Type>>();
         dInput_tensor->data = dInput_padded;
         dInput_tensor->grad = Tensor4D(dInput_padded.size(), Tensor3D(dInput_padded[0].size(),
                                                                       std::vector<std::vector<Type>>(dInput_padded[0][0].size(),

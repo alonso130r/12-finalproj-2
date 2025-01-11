@@ -11,7 +11,7 @@
 #include <utility>
 
 template <typename Type>
-class MaxPoolingOperation<Type> : public Operation {
+class MaxPoolingOperation : public Operation<Type> {
     typedef std::vector<std::vector<std::vector<Type>>> Tensor3D; // (channels, height, width)
     typedef std::vector<std::vector<std::vector<std::vector<Type>>>> Tensor4D; // (batch_size, channels, height, width)
 private:
@@ -28,9 +28,9 @@ public:
 
     Tensor<Type> forward(const Tensor<Type> &input) override;
 
-    void backward(Tensor<Type> &output_grad) override;
+    std::shared_ptr<Tensor<Type>> backward(std::shared_ptr<Tensor<Type>>& output_grad) override;
 };
 
-#include "MaxPoolingOperation.tpp"
+//#include "MaxPoolingOperation.tpp"
 
 #endif //INC_12_FINALPROJ_2_MAXPOOLINGOPERATION_H

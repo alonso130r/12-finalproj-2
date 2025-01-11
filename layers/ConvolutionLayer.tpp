@@ -7,10 +7,11 @@
 #include <cstdlib>
 #include <ctime>
 #include <stdexcept>
+#include <random>
 
 template <typename Type>
 ConvolutionLayer<Type>::ConvolutionLayer(int in_channels, int out_channels, int filter_height, int filter_width, int stride,
-                                   int padding) : channel_in(in_channels), channel_out(out_channels),
+                                   int padding) : in_channels(in_channels), out_channels(out_channels),
                                                   filter_height(filter_height), filter_width(filter_width),
                                                   stride(stride), padding(padding) {
     initializeFilters();
@@ -22,7 +23,7 @@ ConvolutionLayer<Type>::ConvolutionLayer(int in_channels, int out_channels, int 
 template <typename Type>
 void ConvolutionLayer<Type>::initializeFilters() {
     // calculate fan in and standard deviation
-    int fan_in = filter_height * filter_width * channel_in;
+    int fan_in = filter_height * filter_width * in_channels;
     Type std_dev = sqrt(2.0 / static_cast<Type>(fan_in));
 
     // initialize random generators (mersenne twister engine)

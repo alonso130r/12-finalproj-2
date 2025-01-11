@@ -5,18 +5,18 @@
 #include "ConvolutionOperation.h"
 
 template <typename Type>
-ConvolutionOperation<Type>::ConvolutionOperation(ConvolutionLayer<Type>& layer) : convLayer(layer) {}
+ConvolutionOperation<Type>::ConvolutionOperation(ConvolutionLayer<Type>& layer) : convolutionLayer(layer) {}
 
 template <typename Type>
 Tensor<Type> ConvolutionOperation<Type>::forward(const Tensor<Type>& input_tensor) {
     input = input_tensor; // cache input for backpropagation
-    Tensor<Type> output = convLayer.forward(input.data); // perform convolution
+    Tensor<Type> output = convolutionLayer.forward(input.data); // perform convolution
     return output;
 }
 
 template <typename Type>
 void ConvolutionOperation<Type>::backward(Tensor<Type>& output_grad) {
-    Tensor4D dInput = convLayer.backward(output_grad.data);
+    Tensor4D dInput = convolutionLayer.backward(output_grad.data);
 
     // accumulate gradients
     for(int n = 0; n < dInput.size(); ++n) {

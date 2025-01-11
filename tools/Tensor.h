@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 
+template <typename Type>
 class Operation;
 
 template <typename Type>
@@ -17,10 +18,10 @@ class Tensor {
 public:
     Tensor4D data;
     Tensor4D grad;
-    std::shared_ptr<Operation> creator; // points to operation that made it/edited it, for computation graphs
+    std::shared_ptr<Operation<Type>> creator; // points to operation that made it/edited it, for computation graphs
 
-    Tensor() = default;
-    Tensor(int batch_size, int channels, int height, int width, double value = 0.0);
+//    Tensor() = default;
+    Tensor(int batch_size, int channels, int height, int width, Type value = 0.0);
 
     void zeroGrad(); // to clear the gradients
 };

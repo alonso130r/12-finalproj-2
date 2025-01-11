@@ -6,7 +6,8 @@
 #include <cmath>
 #include <stdexcept>
 #include <memory>
-#include "Tensor.h"
+#include "../tools/Tensor.h"
+#include "Layer.h"
 
 template <typename Type>
 class ConvolutionLayer : public Layer<Type> {
@@ -39,12 +40,12 @@ public:
 
     void zeroGrad();
 
-    size_t getNumParams() const;
+    [[nodiscard]] size_t getNumParams() const;
 
     void setFilters(const Filters& new_filters);
     void setBiases(const std::vector<Type>& new_biases);
 };
 
-#include "ConvolutionLayer.tpp"
+//#include "ConvolutionLayer.tpp"
 
 #endif // CONVOLUTION_LAYER_H

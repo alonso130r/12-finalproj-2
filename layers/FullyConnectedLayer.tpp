@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <stdexcept>
+#include <random>
 
 template <typename Type>
 FullyConnectedLayer<Type>::FullyConnectedLayer(int in_features, int out_features) : in_features(in_features), out_features(out_features) {

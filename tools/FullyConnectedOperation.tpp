@@ -82,7 +82,7 @@ std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::backward(const std
     int width    = input->data[0][0][0].size();
     int flatten_dim = channels * height * width;
 
-    auto dInput = std::make_shared<Tensor>(batch_size, channels, height, width, 0.0);
+    auto dInput = std::make_shared<Tensor<Type>>(batch_size, channels, height, width, 0.0);
 
     fcLayer.zeroGrad();
 

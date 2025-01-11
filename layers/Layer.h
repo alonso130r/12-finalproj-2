@@ -11,6 +11,6 @@ class Layer {
 
 };
 
-#include "Layer.tpp"
+//#include "Layer.tpp"
 
 #endif //INC_12_FINALPROJ_2_LAYER_H

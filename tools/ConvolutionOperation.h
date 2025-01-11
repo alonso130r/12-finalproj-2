@@ -6,16 +6,17 @@
 #define INC_12_FINALPROJ_2_CONVOLUTIONOPERATION_H
 
 #include "Operation.h"
-#include "ConvolutionLayer.h"
+#include "../layers/ConvolutionLayer.h"
 
 template <typename Type>
 class ConvolutionOperation : public Operation<Type> {
+    typedef std::vector<std::vector<std::vector<std::vector<Type>>>> Tensor4D;
 private:
     ConvolutionLayer<Type>& convolutionLayer;
     Tensor<Type> input;
 
 public:
-    ConvolutionOperation(ConvolutionLayer& convolutionLayer);
+    explicit ConvolutionOperation(ConvolutionLayer<Type>& convolutionLayer);
     Tensor<Type> forward(const Tensor<Type>& input) override;
     void backward(Tensor<Type>& output_grad) override;
 };

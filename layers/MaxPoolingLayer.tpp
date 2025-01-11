@@ -12,13 +12,13 @@ MaxPoolingLayer<Type>::MaxPoolingLayer(int pool_height, int pool_width, int stri
 }
 
 template <typename Type>
-std::shared_ptr<Tensor<Type> MaxPoolingLayer<Type>::forward(const std::shared_ptr<Tensor<Type>> &input) {
+std::shared_ptr<Tensor<Type>> MaxPoolingLayer<Type>::forward(std::shared_ptr<Tensor<Type>> &input) {
     auto output = maxPoolOp->forward({input});
     return output;
 }
 
 template <typename Type>
-std::shared_ptr<Tensor<Type>> MaxPoolingLayer<Type>::backward(const std::shared_ptr<Tensor<Type>> &dOut) {
+std::shared_ptr<Tensor<Type>> MaxPoolingLayer<Type>::backward(std::shared_ptr<Tensor<Type>> &dOut) {
     auto input_grad = maxPoolOp->backward(dOut);
     return input_grad;
 }
