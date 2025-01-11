@@ -9,7 +9,8 @@
 #include <memory>
 #include <stdexcept>
 #include <cmath>
-#include "Tensor.h"
+#include "../tools/Tensor.h"
+#include "Layer.h"
 
 template <typename Type>
 class FullyConnectedLayer : public Layer<Type> {
