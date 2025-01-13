@@ -8,81 +8,78 @@
 
 template <typename Type>
 ModularCNN<Type>::ModularCNN(const std::vector<LayerConfig>& configs) {
-    // parse each config and create the corresponding internal layer
-    size_t convCount = 0;
-    size_t poolCount = 0;
-    size_t fcCount   = 0;
-
+    // parse each config, create the corresponding layer object, store in 'layers' as a shared_ptr<Layer<Type>>, and track the type string in layerTypes
     for(const auto &cfg : configs) {
         if(cfg.type == "conv") {
-            // create a ConvolutionLayer
-            convLayers.emplace_back(cfg.in_channels,
-                                    cfg.out_channels,
-                                    cfg.filter_height,
-                                    cfg.filter_width,
-                                    cfg.stride,
-                                    cfg.padding);
-            layerTypes.push_back("conv");
-            convCount++;
+            auto conv = std::make_shared<ConvolutionLayer<Type>>(
+                    cfg.in_channels,
+                    cfg.out_channels,
+                    cfg.filter_height,
+                    cfg.filter_width,
+                    cfg.stride,
+                    cfg.padding
+            );
+            layers.push_back(conv);
+            layerTypes.emplace_back("conv");
         }
         else if(cfg.type == "pool") {
-            // create a MaxPoolingLayer
-            poolLayers.emplace_back(cfg.pool_height,
-                                    cfg.pool_width,
-                                    cfg.stride,
-                                    cfg.padding);
-            layerTypes.push_back("pool");
-            poolCount++;
+            auto pool = std::make_shared<MaxPoolingLayer<Type>>(
+                    cfg.pool_height,
+                    cfg.pool_width,
+                    cfg.stride,
+                    cfg.padding
+            );
+            layers.push_back(pool);
+            layerTypes.emplace_back("pool");
         }
         else if(cfg.type == "fc") {
-            // create a FullyConnectedLayer
-            fcLayers.emplace_back(cfg.in_features, cfg.out_features);
-            layerTypes.push_back("fc");
-            fcCount++;
+            auto fc = std::make_shared<FullyConnectedLayer<Type>>(
+                    cfg.in_features,
+                    cfg.out_features
+            );
+            layers.push_back(fc);
+            layerTypes.emplace_back("fc");
         }
         else {
             throw std::runtime_error("Unknown layer type: " + cfg.type);
         }
     }
+
+    // automatically build the graph
     buildGraph();
 }
 
 template <typename Type>
 void ModularCNN<Type>::buildGraph() {
-    // clear existing ops in case we're re-building
+    // clear existing ops
     graph = ComputationGraph<Type>();
 
-    size_t convIndex = 0;
-    size_t poolIndex = 0;
-    size_t fcIndex   = 0;
-
-    // build in the order of layerTypes
-    for(const auto & t : layerTypes) {
+    // iterate over layers in order
+    for(std::size_t i = 0; i < layers.size(); ++i) {
+        std::string t = layerTypes[i];
         if(t == "conv") {
-            // add ConvolutionOperation
-            if(convIndex >= convLayers.size()) {
-                throw std::runtime_error("Not enough convLayers for 'conv' in buildGraph");
+            // dynamic_cast to ConvolutionLayer<Type>*
+            auto convPtr = std::dynamic_pointer_cast<ConvolutionLayer<Type>>(layers[i]);
+            if(!convPtr) {
+                throw std::runtime_error("Failed dynamic_cast to ConvolutionLayer in buildGraph");
             }
-            graph.addOperation(std::make_shared<ConvolutionOperation<Type>>(convLayers[convIndex]));
-            convIndex++;
-        }
-        else if(t == "pool") {
-            if(poolIndex >= poolLayers.size()) {
-                throw std::runtime_error("Not enough poolLayers for 'pool'");
+            graph.addOperation(std::make_shared<ConvolutionOperation<Type>>(*convPtr));
+        } else if (t == "pool") {
+            // dynamic_cast to MaxPoolingLayer<Type>*
+            auto poolPtr = std::dynamic_pointer_cast<MaxPoolingLayer<Type>>(layers[i]);
+            if(!poolPtr) {
+                throw std::runtime_error("Failed dynamic_cast to MaxPoolingLayer in buildGraph");
             }
-            auto &pl = poolLayers[poolIndex];
             graph.addOperation(std::make_shared<MaxPoolingOperation<Type>>(
-                    pl.pool_height, pl.pool_width, pl.stride, pl.padding));
-            poolIndex++;
-        }
-        else if(t == "fc") {
-            if(fcIndex >= fcLayers.size()) {
-                throw std::runtime_error("Not enough fcLayers for 'fc'");
+                    poolPtr->pool_height, poolPtr->pool_width, poolPtr->stride, poolPtr->padding));
+        } else if (t == "fc") {
+            // dynamic_cast to FullyConnectedLayer<Type>*
+            auto fcPtr = std::dynamic_pointer_cast<FullyConnectedLayer<Type>>(layers[i]);
+            if(!fcPtr) {
+                throw std::runtime_error("Failed dynamic_cast to FullyConnectedLayer in buildGraph");
             }
-            graph.addOperation(std::make_shared<FullyConnectedOperation<Type>>(fcLayers[fcIndex]));
-            fcIndex++;
-        }
-        else {
+            graph.addOperation(std::make_shared<FullyConnectedOperation<Type>>(*fcPtr));
+        } else {
             throw std::runtime_error("Unknown layer type in buildGraph: " + t);
         }
     }
@@ -95,26 +92,8 @@ std::shared_ptr<Tensor<Type>> ModularCNN<Type>::forward(const std::shared_ptr<Te
 
 template <typename Type>
 void ModularCNN<Type>::zeroGrad() {
-    // zero conv
-    for (auto &c: convLayers) {
-        c.zeroGrad();
+    // loop over all layers in 'layers'
+    for(auto &layerPtr : layers) {
+        layerPtr->zeroGrad();
     }
-    // zero fc
-    for (auto &f: fcLayers) {
-        f.zeroGrad();
-    }
-}
-
-template <typename Type>
-size_t ModularCNN<Type>::getTotalParams() const {
-    size_t total = 0;
-    // conv
-    for(const auto &c : convLayers) {
-        total += c.getNumParams();
-    }
-    // fc
-    for(const auto &f : fcLayers) {
-        total += f.getNumParams();
-    }
-    return total;
 }

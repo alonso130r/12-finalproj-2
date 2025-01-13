@@ -18,6 +18,7 @@
 #include "../tools/MaxPoolingOperation.h"
 #include "../tools/FullyConnectedOperation.h"
 #include "../tools/Tensor.h"
+#include "../layers/Layer.h"
 
 /**
  * @brief A fully modular CNN class that allows specifying an arbitrary sequence
@@ -31,14 +32,11 @@ private:
     // store the sequence of layers
     std::vector<std::string> layerTypes; // "conv", "pool", "fc", etc.
 
-public:
-    std::vector<ConvolutionLayer<Type>> convLayers;
-    std::vector<MaxPoolingLayer<Type>> poolLayers;
-    std::vector<FullyConnectedLayer<Type>> fcLayers;
+    std::vector<std::shared_ptr<Layer<Type>>> layers;
 
     ComputationGraph<Type> graph;
-
-    ModularCNN(const std::vector<LayerConfig>& configs);
+public:
+    explicit ModularCNN(const std::vector<LayerConfig>& configs);
 
     void buildGraph();
 
@@ -46,7 +44,7 @@ public:
 
     void zeroGrad();
 
-    size_t getTotalParams() const;
+    [[nodiscard]] ssize_t getTotalParams() const;
 };
 
 #include "ModularCNN.tpp"
