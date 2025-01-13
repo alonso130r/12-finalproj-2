@@ -127,7 +127,7 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
  * backward pass through the convolutional layer
  */
 template <typename Type>
-void ConvolutionLayer<Type>::backward(const std::shared_ptr<Tensor<Type>>& dOut) {
+Tensor4D ConvolutionLayer<Type>::backward(const std::shared_ptr<Tensor<Type>>& dOut) {
     int batch_size = dOut->data.size();
     if (batch_size == 0) {
         throw std::invalid_argument("dOut batch size is zero.");
@@ -193,6 +193,8 @@ void ConvolutionLayer<Type>::backward(const std::shared_ptr<Tensor<Type>>& dOut)
     } else {
         dOut->grad = dInput;
     }
+
+    return dOut->grad;
 }
 
 template <typename Type>

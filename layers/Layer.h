@@ -8,7 +8,9 @@
 
 template <typename Type>
 class Layer {
-
+public:
+   [[nodiscard]] virtual ssize_t getNumParams() const = 0;
+   virtual void zeroGrad() = 0;
 };
 
 //#include "Layer.tpp"

@@ -11,7 +11,7 @@ MaxPoolingOperation<Type>::MaxPoolingOperation(int pool_height, int pool_width, 
         pool_height(pool_height), pool_width(pool_width), stride(stride), padding(padding) {}
 
 template <typename Type>
-std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::forward(const std::vector<std::shared_ptr<Tensor<Type>>> &input) {
+std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::forward(const std::shared_ptr<Tensor<Type>> &input) {
     int batch_size = input.shape[0];
     int channels = input.data[0].size();
     int input_height = input.data[0][0].size();

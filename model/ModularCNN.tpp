@@ -97,3 +97,12 @@ void ModularCNN<Type>::zeroGrad() {
         layerPtr->zeroGrad();
     }
 }
+
+template <typename Type>
+ssize_t ModularCNN<Type>::getTotalParams() const {
+    ssize_t total = 0;
+    for(const auto &layerPtr : layers) {
+        total += layerPtr->getNumParams();
+    }
+    return total;
+}

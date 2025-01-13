@@ -16,7 +16,7 @@ public:
 
     virtual ~Operation() = default;
 
-    virtual std::shared_ptr<Tensor<Type>> forward(const std::vector<std::shared_ptr<Tensor<Type>>>& inputs) = 0;
+    virtual std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>>& inputs) = 0;
 
     virtual std::shared_ptr<Tensor<Type>> backward(const std::shared_ptr<Tensor<Type>>& output_grad) = 0;
 };

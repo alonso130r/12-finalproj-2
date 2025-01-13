@@ -36,7 +36,7 @@ public:
 
     std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>>& input);
 
-    void backward(const std::shared_ptr<Tensor<Type>>& dOut);
+    Tensor4D backward(const std::shared_ptr<Tensor<Type>>& dOut);
 
     void zeroGrad();
 

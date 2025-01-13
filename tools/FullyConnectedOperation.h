@@ -23,7 +23,7 @@ private:
 public:
     explicit FullyConnectedOperation(FullyConnectedLayer<Type>& fcLayer, bool is_activated = true);
 
-    std::shared_ptr<Tensor<Type>> forward(const std::vector<std::shared_ptr<Tensor<Type>>>& inputs) override;
+    std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>>& inputs) override;
     std::shared_ptr<Tensor<Type>> backward(const std::shared_ptr<Tensor<Type>>& output_grad) override;
 };
 

@@ -29,7 +29,7 @@ std::vector<Type> FullyConnectedOperation<Type>::flattenSample(const Tensor4D& d
 }
 
 template <typename Type>
-std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::forward(const std::vector <std::shared_ptr<Tensor<Type>>> &inputs) {
+std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::forward(const std::shared_ptr<Tensor<Type>> &inputs) {
     if(inputs.size() != 1) {
         throw std::invalid_argument("FullyConnectedOperation expects exactly one input tensor.");
     }

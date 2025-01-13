@@ -13,12 +13,12 @@ class ConvolutionOperation : public Operation<Type> {
     typedef std::vector<std::vector<std::vector<std::vector<Type>>>> Tensor4D;
 private:
     ConvolutionLayer<Type>& convolutionLayer;
-    Tensor<Type> input;
+    std::shared_ptr<Tensor<Type>> input;
 
 public:
     explicit ConvolutionOperation(ConvolutionLayer<Type>& convolutionLayer);
-    Tensor<Type> forward(const Tensor<Type>& input) override;
-    void backward(Tensor<Type>& output_grad) override;
+    std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>>& input) override;
+    std::shared_ptr<Tensor<Type>> backward(const std::shared_ptr<Tensor<Type>>& output_grad) override;
 };
 
 #include "ConvolutionOperation.tpp"

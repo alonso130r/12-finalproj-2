@@ -5,7 +5,7 @@
 #include "ComputationGraph.h"
 
 template <typename Type>
-void ComputationGraph<Type>::addOperation(std::shared_ptr<Operation<Type>>& operation) {
+void ComputationGraph<Type>::addOperation(const std::shared_ptr<Operation<Type>>& operation) {
     operations.push_back(operation);
 }
 

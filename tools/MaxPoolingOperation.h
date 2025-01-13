@@ -26,7 +26,7 @@ private:
 public:
     MaxPoolingOperation(int pool_height, int pool_width, int stride = 1, int padding = 0);
 
-    std::shared_ptr<Tensor<Type>> forward(const std::vector<std::shared_ptr<Tensor<Type>>> &input) override;
+    std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>> &input) override;
 
     std::shared_ptr<Tensor<Type>> backward(const std::shared_ptr<Tensor<Type>>& output_grad) override;
 };

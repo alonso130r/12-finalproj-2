@@ -5,27 +5,29 @@
 #include "ConvolutionOperation.h"
 
 template <typename Type>
-ConvolutionOperation<Type>::ConvolutionOperation(ConvolutionLayer<Type>& layer) : convolutionLayer(layer) {}
+ConvolutionOperation<Type>::ConvolutionOperation(ConvolutionLayer<Type>& layer) : convolutionLayer(layer), input(std::make_shared<Tensor<Type>>(0, 0, 0, 0, 0.0)) {}
 
 template <typename Type>
-Tensor<Type> ConvolutionOperation<Type>::forward(const Tensor<Type>& input_tensor) {
+std::shared_ptr<Tensor<Type>> ConvolutionOperation<Type>::forward(const std::shared_ptr<Tensor<Type>>& input_tensor) {
     input = input_tensor; // cache input for backpropagation
-    Tensor<Type> output = convolutionLayer.forward(input.data); // perform convolution
+    std::shared_ptr<Tensor<Type>> output = convolutionLayer.forward(input); // perform convolution
     return output;
 }
 
 template <typename Type>
-void ConvolutionOperation<Type>::backward(Tensor<Type>& output_grad) {
-    Tensor4D dInput = convolutionLayer.backward(output_grad.data);
+std::shared_ptr<Tensor<Type>> ConvolutionOperation<Type>::backward(const std::shared_ptr<Tensor<Type>>& output_grad) {
+    Tensor4D dInput = convolutionLayer.backward(output_grad)->grad;
 
     // accumulate gradients
     for(int n = 0; n < dInput.size(); ++n) {
         for(int c = 0; c < dInput[0].size(); ++c) {
             for(int h = 0; h < dInput[0][0].size(); ++h) {
                 for(int w = 0; w < dInput[0][0][0].size(); ++w) {
-                    input.grad[n][c][h][w] += dInput[n][c][h][w];
+                    input->grad[n][c][h][w] += dInput[n][c][h][w];
                 }
             }
         }
     }
+
+    return input;
 }
