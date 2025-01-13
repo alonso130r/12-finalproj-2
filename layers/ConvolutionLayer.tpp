@@ -118,7 +118,7 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
     }
 
     // set creator operation(for computation graph)
-     output->creator = ...;
+     output->creator = this;
 
     return output;
 }
@@ -226,7 +226,7 @@ void ConvolutionLayer<Type>::zeroGrad() {
 }
 
 template <typename Type>
-size_t ConvolutionLayer<Type>::getNumParams() const {
+ssize_t ConvolutionLayer<Type>::getNumParams() const {
     size_t out_channels = filters.size();
     if(out_channels == 0) return 0;
     size_t in_channels  = filters[0].size();

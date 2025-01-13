@@ -60,7 +60,7 @@ void FullyConnectedLayer<Type>::zeroGrad() {
  * Get the number of parameters in the layer
  */
 template <typename Type>
-size_t FullyConnectedLayer<Type>::getNumParams() const {
+ssize_t FullyConnectedLayer<Type>::getNumParams() const {
     size_t wParams = (size_t)out_features * (size_t)in_features;
     size_t bParams = biases.size();
     return wParams + bParams;

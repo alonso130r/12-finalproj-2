@@ -40,7 +40,7 @@ public:
 
     void zeroGrad();
 
-    [[nodiscard]] size_t getNumParams() const;
+    [[nodiscard]] ssize_t getNumParams() const;
 
     void setFilters(const Filters& new_filters);
     void setBiases(const std::vector<Type>& new_biases);

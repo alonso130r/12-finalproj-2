@@ -24,6 +24,6 @@ std::shared_ptr<Tensor<Type>> MaxPoolingLayer<Type>::backward(std::shared_ptr<Te
 }
 
 template <typename Type>
-size_t MaxPoolingLayer<Type>::getNumParams() const {
+ssize_t MaxPoolingLayer<Type>::getNumParams() const {
     return 0;
 }
