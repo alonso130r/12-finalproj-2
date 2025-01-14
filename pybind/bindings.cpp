@@ -38,6 +38,15 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def_readwrite("creator", &Tensor<bfloat>::creator)
         .def("zeroGrad", &Tensor<bfloat>::zeroGrad);
 
+    class_<Layer<bfloat>>(m, "Layer")
+        .def("getNumParams", &Layer<bfloat>::getNumParams)
+        .def("zeroGrad", &Layer<bfloat>::zeroGrad);
+
+    class_<Operation<bfloat>>(m, "Operation")
+        .def_readwrite("inputs", &Operation<bfloat>::inputs)
+        .def("forward", &Operation<bfloat>::forward)
+        .def("backward", &Operation<bfloat>::backward);
+
     class_<ComputationGraph<bfloat>>(m, "ComputationGraph")
         .def(init<>())
         .def("addOperation", &ComputationGraph<bfloat>::addOperation)
@@ -67,4 +76,30 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("initializeParams", &FullyConnectedLayer<bfloat>::initializeParams)
         .def("zeroGrad", &FullyConnectedLayer<bfloat>::zeroGrad)
         .def("getNumParams", &FullyConnectedLayer<bfloat>::getNumParams);
+
+    class_<ConvolutionOperation<bfloat>>(m, "ConvolutionOperation")
+        .def(init<ConvolutionLayer<bfloat>&>())
+        .def("forward", &ConvolutionOperation<bfloat>::forward)
+        .def("backward", &ConvolutionOperation<bfloat>::backward);
+
+    class_<MaxPoolingOperation<bfloat>>(m, "MaxPoolingOperation")
+        .def(init<int, int, int, int>())
+        .def("forward", &MaxPoolingOperation<bfloat>::forward)
+        .def("backward", &MaxPoolingOperation<bfloat>::backward);
+
+    class_<FullyConnectedOperation<bfloat>>(m, "FullyConnectedOperation")
+        .def(init<FullyConnectedLayer<bfloat>&>())
+        .def("forward", &FullyConnectedOperation<bfloat>::forward)
+        .def("backward", &FullyConnectedOperation<bfloat>::backward);
+
+    class_<AMSGrad<bfloat>>(m, "AMSGrad")
+        .def(init<double, double, double, double, double>())
+        .def("initializeConv", &AMSGrad<bfloat>::initializeConv)
+        .def("update", overload_cast<ConvolutionLayer<bfloat>&,
+                const std::vector<std::vector<std::vector<std::vector<bfloat>>>>&,
+                const std::vector<bfloat>&>(&AMSGrad<bfloat>::update))
+        .def("initializeFC", &AMSGrad<bfloat>::initializeFC)
+        .def("update", overload_cast<FullyConnectedLayer<bfloat>&,
+                const std::vector<std::vector<bfloat>>&,
+                const std::vector<bfloat>&>(&AMSGrad<bfloat>::update));
 }

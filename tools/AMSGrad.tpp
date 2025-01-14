@@ -59,7 +59,7 @@ void AMSGrad<Type>::initializeFC(const FullyConnectedLayer<Type> &layer) {
 }
 
 /**
- * @brief AdamWAMSGrad update for FullyConnectedLayer
+ * @brief AdamWAMSGrad update for ConvolutionLayer
  */
 template <typename Type>
 void AMSGrad<Type>::update(ConvolutionLayer<Type> &layer,
