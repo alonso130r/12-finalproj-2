@@ -87,7 +87,7 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::sha
 
     // initialize dInput_padded with zeros
     Tensor4D dInput_padded(batch_size, Tensor3D(channels, std::vector<std::vector<Type>>(
-            input_height_calc + 2 * padding, std::vector<Type>(input_width_calc + 2 * padding, 0.0))));
+            input_height_calc + 2 * padding, std::vector<Type>(input_width_calc + 2 * padding, static_cast<Type>(0.0)))));
 
     // gradients based on max_indices
     for(int n = 0; n < batch_size; ++n) {
@@ -136,7 +136,7 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::sha
         dInput_tensor->data = dInput_unpadded;
         dInput_tensor->grad = Tensor4D(dInput_unpadded.size(), Tensor3D(dInput_unpadded[0].size(),
                                                                         std::vector<std::vector<Type>>(dInput_unpadded[0][0].size(),
-                                                                                std::vector<Type>(dInput_unpadded[0][0][0].size(), 0.0))));
+                                                                                std::vector<Type>(dInput_unpadded[0][0][0].size(), static_cast<Type>(0.0)))));
 
         return dInput_tensor;
     }
@@ -156,7 +156,7 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::sha
         dInput_tensor->data = dInput_padded;
         dInput_tensor->grad = Tensor4D(dInput_padded.size(), Tensor3D(dInput_padded[0].size(),
                                                                       std::vector<std::vector<Type>>(dInput_padded[0][0].size(),
-                                                                              std::vector<Type>(dInput_padded[0][0][0].size(), 0.0))));
+                                                                              std::vector<Type>(dInput_padded[0][0][0].size(), static_cast<Type>(0.0)))));
 
         return dInput_tensor;
     }

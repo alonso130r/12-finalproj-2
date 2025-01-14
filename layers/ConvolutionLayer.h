@@ -11,10 +11,11 @@
 
 template <typename Type>
 class ConvolutionLayer : public Layer<Type> {
+public:
     typedef std::vector<std::vector<std::vector<Type>>> Tensor3D; // (channels, height, width)
     typedef std::vector<std::vector<std::vector<std::vector<Type>>>> Tensor4D; // (batch_size, channels, height, width)
     typedef std::vector<Tensor3D> Filters; // (out_channels, in_channels, filter_height, filter_width)
-public:
+
     int in_channels;
     int out_channels;
     int filter_height;

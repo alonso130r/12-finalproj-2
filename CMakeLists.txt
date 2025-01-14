@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.31)
 
 project(ModularCNN LANGUAGES CXX)
 
@@ -12,3 +12,9 @@ set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 REQUIRED)
 
 pybind11_add_module(ModularCNN MODULE pybind/bindings.cpp)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(ModularCNN PRIVATE -fdiagnostics-color=always)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(ModularCNN PRIVATE -fcolor-diagnostics)
+endif()

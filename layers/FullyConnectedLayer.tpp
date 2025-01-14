@@ -21,28 +21,28 @@ template <typename Type>
 void FullyConnectedLayer<Type>::initializeParams() {
     // calculate fan in and standard deviation
     Type fan_in = static_cast<Type>(in_features);
-    Type std_dev = sqrt(2.0 / fan_in);
+    Type std_dev = sqrt(static_cast<Type>(2.0) / static_cast<Type>(fan_in));
 
     // initialize random generators (mersenne twister engine)
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::normal_distribution<Type> dist(0.0, std_dev);
+    std::normal_distribution<Type> dist(static_cast<Type>(0.0), std_dev);
 
     // resize weights and biases
-    weights.resize(out_features, std::vector<Type>(in_features, 0.0));
-    biases.resize(out_features, 0.0);
+    weights.resize(out_features, std::vector<Type>(in_features, static_cast<Type>(0.0)));
+    biases.resize(out_features, static_cast<Type>(0.0));
 
     // initialize weights with He initialization
     for (int i = 0; i < out_features; ++i) {
         for (int j = 0; j < in_features; ++j) {
             weights[i][j] = dist(gen); // sampled from N(0, std_dev^2)
         }
-        biases[i] = 0.0; // initialize biases to zero
+        biases[i] = static_cast<Type>(0.0); // initialize biases to zero
     }
 
     // initialize gradients to zero
-    dWeights.resize(out_features, std::vector<Type>(in_features, 0.0));
-    dBiases.resize(out_features, 0.0);
+    dWeights.resize(out_features, std::vector<Type>(in_features, static_cast<Type>(0.0)));
+    dBiases.resize(out_features, static_cast<Type>(0.0));
 }
 
 /*
@@ -51,9 +51,9 @@ void FullyConnectedLayer<Type>::initializeParams() {
 template <typename Type>
 void FullyConnectedLayer<Type>::zeroGrad() {
     for(int i = 0; i < out_features; ++i) {
-        std::fill(dWeights[i].begin(), dWeights[i].end(), 0.0);
+        std::fill(dWeights[i].begin(), dWeights[i].end(), static_cast<Type>(0.0));
     }
-    std::fill(dBiases.begin(), dBiases.end(), 0.0);
+    std::fill(dBiases.begin(), dBiases.end(), static_cast<Type>(0.0));
 }
 
 /*

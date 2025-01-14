@@ -2,9 +2,12 @@
 // Created by Vijay Goyal on 2025-01-10.
 //
 
+#include <cstddef>
+#include <sys/types.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <stdfloat>
+#include <vector>
 #include "../model/ModularCNN.h"
 #include "../tools/LayerConfig.h"
 #include "../tools/Tensor.h"
@@ -32,7 +35,7 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def_static("fc", &LayerConfig::fc);
 
     class_<Tensor<bfloat>>(m, "Tensor")
-        .def(init<int, int, int, int, float>())
+        .def(init<int, int, int, int, bfloat>())
         .def_readwrite("data", &Tensor<bfloat>::data)
         .def_readwrite("grad", &Tensor<bfloat>::grad)
         .def_readwrite("creator", &Tensor<bfloat>::creator)

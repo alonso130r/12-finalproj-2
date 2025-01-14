@@ -16,7 +16,7 @@ std::vector<Type> FullyConnectedOperation<Type>::flattenSample(const Tensor4D& d
     int height = data[n][0].size();
     int width = data[n][0][0].size();
 
-    std::vector<Type> flattened(channels * height * width, 0.0);
+    std::vector<Type> flattened(channels * height * width, static_cast<Type>(0.0));
     int idx = 0;
     for(int c = 0; c < channels; ++c) {
         for(int h = 0; h < height; ++h) {
@@ -48,14 +48,14 @@ std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::forward(const std:
         throw std::invalid_argument("FullyConnectedOperation: Flattened input size does not match fcLayer.in_features.");
     }
 
-    auto output = std::make_shared<Tensor<Type>>(batch_size, fcLayer.out_features, 1, 1, 0.0);
+    auto output = std::make_shared<Tensor<Type>>(batch_size, fcLayer.out_features, 1, 1, static_cast<Type>(0.0));
 
     // for each sample in the batch
     for(int n = 0; n < batch_size; ++n) {
         std::vector<Type> x = flattenSample(input->data, n);
         // multiply
         for(int out_i = 0; out_i < fcLayer.out_features; ++out_i) {
-            Type sum = 0.0;
+            Type sum = static_cast<Type>(0.0);
             for(int in_j = 0; in_j < fcLayer.in_features; ++in_j) {
                 sum += fcLayer.weights[out_i][in_j] * x[in_j];
             }
@@ -82,7 +82,7 @@ std::shared_ptr<Tensor<Type>> FullyConnectedOperation<Type>::backward(const std:
     int width    = input[0][0][0].size();
     int flatten_dim = channels * height * width;
 
-    auto dInput = std::make_shared<Tensor<Type>>(batch_size, channels, height, width, 0.0);
+    auto dInput = std::make_shared<Tensor<Type>>(batch_size, channels, height, width, static_cast<Type>(0.0));
 
     fcLayer.zeroGrad();
 
@@ -92,7 +92,7 @@ std::shared_ptr<Tensor<Type>> FullyConnectedOperation<Type>::backward(const std:
         std::vector<Type> x = flattenSample(input, n);
 
         // out_grad: shape (out_features), i.e., output_grad->data[n][out_i][0][0]
-        std::vector<Type> grad_out(fcLayer.out_features, 0.0);
+        std::vector<Type> grad_out(fcLayer.out_features, static_cast<Type>(0.0));
         for(int out_i = 0; out_i < fcLayer.out_features; ++out_i) {
             grad_out[out_i] = output_grad->grad[n][out_i][0][0];
         }

@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <memory>
+#include <cstddef>
 
 template <typename Type>
 class Operation;

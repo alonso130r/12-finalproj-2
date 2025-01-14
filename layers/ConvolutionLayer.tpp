@@ -24,16 +24,16 @@ template <typename Type>
 void ConvolutionLayer<Type>::initializeFilters() {
     // calculate fan in and standard deviation
     int fan_in = filter_height * filter_width * in_channels;
-    Type std_dev = sqrt(2.0 / static_cast<Type>(fan_in));
+    Type std_dev = sqrt(static_cast<Type>(2.0) / static_cast<Type>(fan_in));
 
     // initialize random generators (mersenne twister engine)
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::normal_distribution<Type> dist(0.0, std_dev);
+    std::normal_distribution<Type> dist(static_cast<Type>(0.0), std_dev);
 
     // resize filters and biases
-    filters.resize(out_channels, Tensor3D(in_channels, std::vector<std::vector<Type>>(filter_height, std::vector<Type>(filter_width, 0.0))));
-    biases.resize(out_channels, 0.0);
+    filters.resize(out_channels, Tensor3D(in_channels, std::vector<std::vector<Type>>(filter_height, std::vector<Type>(filter_width, static_cast<Type>(0.0)))));
+    biases.resize(out_channels, static_cast<Type>(0.0));
 
     // initialize filters with He initialization
     for (int f = 0; f < out_channels; ++f) {
@@ -44,12 +44,12 @@ void ConvolutionLayer<Type>::initializeFilters() {
                 }
             }
         }
-        biases[f] = 0.0; // initialize biases to zero
+        biases[f] = static_cast<Type>(0.0); // initialize biases to zero
     }
 
     // initialize gradients to zero
-    dFilters.resize(out_channels, Tensor3D(in_channels, std::vector<std::vector<Type>>(filter_height, std::vector<Type>(filter_width, 0.0))));
-    dBiases.resize(out_channels, 0.0);
+    dFilters.resize(out_channels, Tensor3D(in_channels, std::vector<std::vector<Type>>(filter_height, std::vector<Type>(filter_width, static_cast<Type>(0.0)))));
+    dBiases.resize(out_channels, static_cast<Type>(0.0));
 }
 
 /*
@@ -70,7 +70,7 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
     int input_height = input->data[0][0].size();
     int input_width = input->data[0][0][0].size();
 
-    Tensor4D padded_input(batch_size, Tensor3D(in_channels, std::vector<std::vector<Type>>(input_height + 2 * padding, std::vector<Type>(input_width + 2 * padding, 0.0))));
+    Tensor4D padded_input(batch_size, Tensor3D(in_channels, std::vector<std::vector<Type>>(input_height + 2 * padding, std::vector<Type>(input_width + 2 * padding, static_cast<Type>(0.0)))));
 
     for(int n = 0; n < batch_size; ++n) {
         for(int c = 0; c < in_channels; ++c) {
@@ -88,10 +88,10 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
     int out_height = (padded_height - filter_height) / stride + 1;
     int out_width = (padded_width - filter_width) / stride + 1;
 
-    auto output = std::make_shared<Tensor<Type>>(batch_size, out_channels, out_height, out_width, 0.0);
+    auto output = std::make_shared<Tensor<Type>>(batch_size, out_channels, out_height, out_width, static_cast<Type>(0.0));
 
     // initialize pre_activation cache
-    pre_activation = Tensor4D(batch_size, Tensor3D(out_channels, std::vector<std::vector<Type>>(out_height, std::vector<Type>(out_width, 0.0))));
+    pre_activation = Tensor4D(batch_size, Tensor3D(out_channels, std::vector<std::vector<Type>>(out_height, std::vector<Type>(out_width, static_cast<Type>(0.0)))));
 
     // perform convolution for each sample in the batch
     for(int n = 0; n < batch_size; ++n) {
@@ -127,7 +127,7 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
  * backward pass through the convolutional layer
  */
 template <typename Type>
-Tensor4D ConvolutionLayer<Type>::backward(const std::shared_ptr<Tensor<Type>>& dOut) {
+std::vector<std::vector<std::vector<std::vector<Type>>>> ConvolutionLayer<Type>::backward(const std::shared_ptr<Tensor<Type>>& dOut) {
     int batch_size = dOut->data.size();
     if (batch_size == 0) {
         throw std::invalid_argument("dOut batch size is zero.");
@@ -142,12 +142,12 @@ Tensor4D ConvolutionLayer<Type>::backward(const std::shared_ptr<Tensor<Type>>& d
 
     // initialize gradients
     dFilters.assign(out_channels, Tensor3D(in_channels,
-                                           std::vector<std::vector<Type>> (filter_height, std::vector<Type>(filter_width, 0.0))));
-    dBiases.assign(out_channels, 0.0);
+                                           std::vector<std::vector<Type>> (filter_height, std::vector<Type>(filter_width, static_cast<Type>(0.0)))));
+    dBiases.assign(out_channels, static_cast<Type>(0.0));
 
     Tensor4D dInput(batch_size, Tensor3D(in_channels,
                                          std::vector<std::vector <Type>> (input_height + 2 * padding,
-                                                 std::vector<Type>(input_width + 2 * padding, 0.0))));
+                                                 std::vector<Type>(input_width + 2 * padding, static_cast<Type>(0.0)))));
 
     // perform backward pass for each sample in the batch
     for (int n = 0; n < batch_size; ++n) {
@@ -156,7 +156,7 @@ Tensor4D ConvolutionLayer<Type>::backward(const std::shared_ptr<Tensor<Type>>& d
                 for (int w = 0; w < out_width; ++w) {
                     // compute derivative of relu using cached pre-activation
                     Type pre_act = pre_activation[n][f][h][w];
-                    Type grad_activation = pre_act > 0 ? dOut->grad[n][f][h][w] : 0.0;
+                    Type grad_activation = pre_act > 0 ? dOut->grad[n][f][h][w] : static_cast<Type>(0.0);
 
                     // accumulate bias gradients
                     dBiases[f] += grad_activation;
@@ -168,7 +168,7 @@ Tensor4D ConvolutionLayer<Type>::backward(const std::shared_ptr<Tensor<Type>>& d
                                 int in_w = w * stride + kw;
                                 // accumulate filter gradients
                                 dFilters[f][c][kh][kw] +=
-                                        pre_act > 0 ? dOut->grad[n][f][h][w] * dInput[n][c][in_h][in_w] : 0.0;
+                                        pre_act > 0 ? dOut->grad[n][f][h][w] * dInput[n][c][in_h][in_w] : static_cast<Type>(0.0);
                                 // accumulate input gradients
                                 dInput[n][c][in_h][in_w] += filters[f][c][kh][kw] * grad_activation;
                             }
@@ -223,8 +223,8 @@ void ConvolutionLayer<Type>::setBiases(const std::vector<Type>& new_biases) {
 template <typename Type>
 void ConvolutionLayer<Type>::zeroGrad() {
     dFilters.assign(out_channels, Tensor3D(in_channels,
-                                           std::vector<std::vector<Type>> (filter_height, std::vector<Type>(filter_width, 0.0))));
-    dBiases.assign(out_channels, 0.0);
+                                           std::vector<std::vector<Type>> (filter_height, std::vector<Type>(filter_width, static_cast<Type>(0.0)))));
+    dBiases.assign(out_channels, static_cast<Type>(0.0));
 }
 
 template <typename Type>
