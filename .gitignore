@@ -35,4 +35,4 @@
 /.idea
 /cmake-build-debug
 
-CMakelists.txt
+CMakeLists.txt
