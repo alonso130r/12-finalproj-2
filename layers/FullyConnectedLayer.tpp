@@ -45,6 +45,8 @@ void FullyConnectedLayer<Type>::initializeParams() {
     dBiases.resize(out_features, static_cast<Type>(0.0));
 }
 
+
+
 /*
  * Zero the gradients
  */

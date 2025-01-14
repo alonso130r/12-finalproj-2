@@ -40,6 +40,7 @@ public:
 
     void buildGraph();
 
+
     std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>>& input);
 
     void zeroGrad();
