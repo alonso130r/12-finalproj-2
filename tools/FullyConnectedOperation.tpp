@@ -30,10 +30,10 @@ std::vector<Type> FullyConnectedOperation<Type>::flattenSample(const Tensor4D& d
 
 template <typename Type>
 std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::forward(const std::shared_ptr<Tensor<Type>> &inputs) {
-    if(inputs.size() != 1) {
+    if(inputs->data.size() != 1) {
         throw std::invalid_argument("FullyConnectedOperation expects exactly one input tensor.");
     }
-    auto input = inputs[0];
+    auto input = inputs;
     this->inputs = inputs; // store for backward
 
     // assume input has shape: (batch_size, channels, height, width)
@@ -48,7 +48,7 @@ std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::forward(const std:
         throw std::invalid_argument("FullyConnectedOperation: Flattened input size does not match fcLayer.in_features.");
     }
 
-    auto output = std::make_shared<Tensor>(batch_size, fcLayer.out_features, 1, 1, 0.0);
+    auto output = std::make_shared<Tensor<Type>>(batch_size, fcLayer.out_features, 1, 1, 0.0);
 
     // for each sample in the batch
     for(int n = 0; n < batch_size; ++n) {
@@ -60,7 +60,7 @@ std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::forward(const std:
                 sum += fcLayer.weights[out_i][in_j] * x[in_j];
             }
             sum += fcLayer.biases[out_i]; // add bias
-            if (is_activated) sum = std::max(0.0, sum); // activation on condition
+            if (is_activated) sum = std::max(static_cast<Type>(0.0), sum); // activation on condition
             output->data[n][out_i][0][0] = sum;
         }
     }
@@ -69,17 +69,17 @@ std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::forward(const std:
 }
 
 template <typename Type>
-std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::backward(const std::shared_ptr <Tensor<Type>> &output_grad) {
-    if(this->inputs.empty()) {
+std::shared_ptr<Tensor<Type>> FullyConnectedOperation<Type>::backward(const std::shared_ptr<Tensor<Type>> &output_grad) {
+    if(this->inputs->data.empty()) {
         throw std::runtime_error("FullyConnectedOperation has no stored inputs. Perform forward pass first.");
     }
-    auto input = this->inputs[0]; // original input
-    int batch_size = input->data.size();
+    auto input = this->inputs->data; // original input
+    int batch_size = input.size();
 
     // flatten dimension = channels * height * width
-    int channels = input->data[0].size();
-    int height   = input->data[0][0].size();
-    int width    = input->data[0][0][0].size();
+    int channels = input[0].size();
+    int height   = input[0][0].size();
+    int width    = input[0][0][0].size();
     int flatten_dim = channels * height * width;
 
     auto dInput = std::make_shared<Tensor<Type>>(batch_size, channels, height, width, 0.0);
@@ -89,7 +89,7 @@ std::shared_ptr <Tensor<Type>> FullyConnectedOperation<Type>::backward(const std
     // for each sample in the batch
     for(int n = 0; n < batch_size; ++n) {
         // flatten the sample input
-        std::vector<Type> x = flattenSample(input->data, n);
+        std::vector<Type> x = flattenSample(input, n);
 
         // out_grad: shape (out_features), i.e., output_grad->data[n][out_i][0][0]
         std::vector<Type> grad_out(fcLayer.out_features, 0.0);

@@ -27,3 +27,8 @@ template <typename Type>
 ssize_t MaxPoolingLayer<Type>::getNumParams() const {
     return 0;
 }
+
+template<typename Type>
+void MaxPoolingLayer<Type>::zeroGrad() {
+    // do nothing
+}

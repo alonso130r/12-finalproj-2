@@ -12,7 +12,7 @@
 template <typename Type>
 class Operation {
 public:
-    std::vector<std::shared_ptr<Tensor<Type>>> inputs;
+    std::shared_ptr<Tensor<Type>> inputs;
 
     virtual ~Operation() = default;
 

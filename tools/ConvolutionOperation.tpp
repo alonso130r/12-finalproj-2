@@ -16,7 +16,7 @@ std::shared_ptr<Tensor<Type>> ConvolutionOperation<Type>::forward(const std::sha
 
 template <typename Type>
 std::shared_ptr<Tensor<Type>> ConvolutionOperation<Type>::backward(const std::shared_ptr<Tensor<Type>>& output_grad) {
-    Tensor4D dInput = convolutionLayer.backward(output_grad)->grad;
+    Tensor4D dInput = convolutionLayer.backward(output_grad);
 
     // accumulate gradients
     for(int n = 0; n < dInput.size(); ++n) {

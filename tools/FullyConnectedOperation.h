@@ -18,7 +18,7 @@ private:
 
     bool is_activated;
 
-    std::vector<Type> flattenSample(const Tensor4D& data, int n);
+    static std::vector<Type> flattenSample(const Tensor4D& data, int n);
 
 public:
     explicit FullyConnectedOperation(FullyConnectedLayer<Type>& fcLayer, bool is_activated = true);
