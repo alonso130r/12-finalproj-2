@@ -3,6 +3,8 @@
 //
 
 #include <cstddef>
+typedef size_t rsize_t;
+#include <_string.h>
 #include <sys/types.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -21,6 +23,7 @@
 #include "../layers/FullyConnectedLayer.h"
 #include "../layers/Layer.h"
 #include "../layers/MaxPoolingLayer.h"
+#include "../tools/CrossEntropy.h"
 
 using bfloat = std::bfloat16_t;
 
@@ -49,6 +52,11 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def_readwrite("inputs", &Operation<bfloat>::inputs)
         .def("forward", &Operation<bfloat>::forward)
         .def("backward", &Operation<bfloat>::backward);
+
+    class_<CrossEntropy<bfloat>>(m, "CrossEntropy")
+        .def(init<bool>())
+        .def("forward", &CrossEntropy<bfloat>::forward)
+        .def("backward", &CrossEntropy<bfloat>::backward);
 
     class_<ComputationGraph<bfloat>>(m, "ComputationGraph")
         .def(init<>())
