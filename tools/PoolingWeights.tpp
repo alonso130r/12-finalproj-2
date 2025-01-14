@@ -5,7 +5,7 @@
 #include "PoolingWeights.h"
 
 template <typename Type>
-PoolingWeights<Type>::PoolingWeights(PoolingWeights<Type> const& layer) {
+PoolingWeights<Type>::PoolingWeights(MaxPoolingLayer<Type> const& layer) {
       pool_height = layer->pool_height;
       pool_width = layer->pool_width;
       stride = layer->stride;

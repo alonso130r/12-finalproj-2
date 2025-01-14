@@ -16,7 +16,7 @@ struct PoolingWeights : public WeightStruct<Type> {
     int stride;
     int padding;
 
-    PoolingWeights(const PoolingWeights<Type>& layer);
+    PoolingWeights(const MaxPoolingLayer<Type>& layer);
 
 };
 
