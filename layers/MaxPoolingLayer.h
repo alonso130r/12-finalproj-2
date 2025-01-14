@@ -14,17 +14,19 @@ template <typename Type>
 class MaxPoolingLayer : public Layer<Type> {
 private:
     std::shared_ptr<MaxPoolingOperation<Type>> maxPoolOp;
+
+public:
     int pool_height;
     int pool_width;
     int stride;
     int padding;
 
-public:
     MaxPoolingLayer(int pool_height, int pool_width, int stride = 1, int padding = 0);
     std::shared_ptr<Tensor<Type>> forward(std::shared_ptr<Tensor<Type>> &input);
     std::shared_ptr<Tensor<Type>> backward(std::shared_ptr<Tensor<Type>> &dOut);
     [[nodiscard]] ssize_t getNumParams() const override;
     void zeroGrad() override;
+
 };
 
 #include "MaxPoolingLayer.tpp"

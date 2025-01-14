@@ -1,0 +1,13 @@
+//
+// Created by adamk on 2025-01-14.
+//
+
+#include "PoolingWeights.h"
+
+template <typename Type>
+PoolingWeights<Type>::PoolingWeights(PoolingWeights<Type> const& layer) {
+      pool_height = layer->pool_height;
+      pool_width = layer->pool_width;
+      stride = layer->stride;
+      padding = layer->padding;
+}

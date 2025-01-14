@@ -12,9 +12,6 @@
 
 template <typename Type>
 struct WeightStruct {
-    std::string type;
-
-    WeightStruct(std::string type) : type(type) {}
 
 };
 
