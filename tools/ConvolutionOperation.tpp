@@ -5,7 +5,7 @@
 #include "ConvolutionOperation.h"
 
 template <typename Type>
-ConvolutionOperation<Type>::ConvolutionOperation(ConvolutionLayer<Type>& layer) : convolutionLayer(layer), input(std::make_shared<Tensor<Type>>(0, 0, 0, 0, 0.0)) {}
+ConvolutionOperation<Type>::ConvolutionOperation(ConvolutionLayer<Type>& layer) : convolutionLayer(layer), input(std::make_shared<Tensor<Type>>(0, 0, 0, 0, static_cast<Type>(0.0))) {}
 
 template <typename Type>
 std::shared_ptr<Tensor<Type>> ConvolutionOperation<Type>::forward(const std::shared_ptr<Tensor<Type>>& input_tensor) {
