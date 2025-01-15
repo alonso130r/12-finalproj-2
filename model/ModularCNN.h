@@ -19,6 +19,9 @@
 #include "../tools/FullyConnectedOperation.h"
 #include "../tools/Tensor.h"
 #include "../layers/Layer.h"
+#include "../tools/WeightStruct.h"
+#include <iostream>
+#include <fstream>
 
 /**
  * @brief A fully modular CNN class that allows specifying an arbitrary sequence
@@ -38,12 +41,15 @@ private:
 public:
     explicit ModularCNN(const std::vector<LayerConfig>& configs);
 
-    void buildGraph();
+    explicit ModularCNN(const std::string path);
 
+    void buildGraph();
 
     std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>>& input);
 
     void zeroGrad();
+
+    void saveWeights();
 
     [[nodiscard]] ssize_t getTotalParams() const;
 };

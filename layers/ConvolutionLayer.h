@@ -8,6 +8,9 @@
 #include <memory>
 #include "../tools/Tensor.h"
 #include "Layer.h"
+#include <iostream>
+#include <fstream>
+#include "../tools/ConvolutionalWeights.h"
 
 template <typename Type>
 class ConvolutionLayer : public Layer<Type> {
@@ -45,8 +48,9 @@ public:
 
     void setFilters(const Filters& new_filters);
     void setBiases(const std::vector<Type>& new_biases);
+    std::shared_ptr<WeightStruct<Type>> saveWeights(const std::string location) override;
 };
 
-//#include "ConvolutionLayer.tpp"
+#include "ConvolutionLayer.tpp"
 
 #endif // CONVOLUTION_LAYER_H

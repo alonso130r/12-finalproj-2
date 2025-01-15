@@ -106,3 +106,11 @@ ssize_t ModularCNN<Type>::getTotalParams() const {
     }
     return total;
 }
+
+template <typename Type>
+void ModularCNN<Type>::saveWeights() {
+    std::vector<WeightStruct<Type>> weights;
+    for(auto &layerPtr : layers) {
+        weights.push_back(layerPtr->saveWeights());
+    }
+}

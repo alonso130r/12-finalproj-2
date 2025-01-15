@@ -67,3 +67,8 @@ ssize_t FullyConnectedLayer<Type>::getNumParams() const {
     size_t bParams = biases.size();
     return wParams + bParams;
 }
+
+template <typename Type>
+std::shared_ptr<WeightStruct<Type>> FullyConnectedLayer<Type>::saveWeights(const std::string location) {
+    return std::make_shared<ConnectedWeights<Type>>(this);
+}

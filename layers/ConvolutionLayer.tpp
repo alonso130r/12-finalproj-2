@@ -242,3 +242,8 @@ ssize_t ConvolutionLayer<Type>::getNumParams() const {
 
     return filterParams + biasParams;
 }
+
+template <typename Type>
+std::shared_ptr<WeightStruct<Type>> ConvolutionLayer<Type>::saveWeights(const std::string location) {
+    return std::make_shared<ConvolutionalWeights<Type>>(this);
+}

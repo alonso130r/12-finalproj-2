@@ -11,6 +11,7 @@
 #include <cmath>
 #include "../tools/Tensor.h"
 #include "Layer.h"
+#include "../tools/ConnectedWeights.h"
 
 template <typename Type>
 class FullyConnectedLayer : public Layer<Type> {
@@ -34,10 +35,12 @@ public:
 
     void zeroGrad();
 
+    std::shared_ptr<WeightStruct<Type>> saveWeights(const std::string location) override;
+
 
     [[nodiscard]] ssize_t getNumParams() const;
 };
 
-//#include "FullyConnectedLayer.tpp"
+#include "FullyConnectedLayer.tpp"
 
 #endif //INC_12_FINALPROJ_2_FULLYCONNECTEDLAYER_H
