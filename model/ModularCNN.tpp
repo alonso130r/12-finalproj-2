@@ -85,6 +85,34 @@ void ModularCNN<Type>::buildGraph() {
     }
 }
 
+template<typename Type>
+ModularCNN<Type>::ModularCNN(const std::string path) {
+    std::ifstream file(path);
+    if (!file) {
+        std::cerr<< "Error opening file" << std::endl;
+        return;
+    }
+    uint32_t count = 0;
+    file.read(reinterpret_cast<char*>(&count), sizeof(count));
+    for (uint32_t i = 0; i < count; ++i) {
+        uint32_t typeVal = 0;
+        file.read(reinterpret_cast<char*>(&typeVal), sizeof(typeVal));
+
+        switch (auto type = static_cast<WeightStructType>(typeVal)) {
+            case WeightStructType::ConvolutionalWeights:
+                layers.emplace_back(ConvolutionalWeights<Type>::deserialize(file));
+                break;
+            case WeightStructType::ConnectedWeights:
+                layers.emplace_back(ConnectedWeights<Type>::deserialize(file));
+                break;
+            case WeightStructType::PoolingWeights:
+                layers.emplace_back(PoolingWeights<Type>::deserialize(file));
+                break;
+        }
+    }
+}
+
+
 template <typename Type>
 std::shared_ptr<Tensor<Type>> ModularCNN<Type>::forward(const std::shared_ptr<Tensor<Type>>& input) {
     return graph.forward(input);
@@ -105,4 +133,30 @@ ssize_t ModularCNN<Type>::getTotalParams() const {
         total += layerPtr->getNumParams();
     }
     return total;
+}
+
+template <typename Type>
+void ModularCNN<Type>::saveWeights(const std::string path) {
+    std::vector<std::shared_ptr<WeightStruct<Type>>> weights;
+
+    for(auto &layerPtr : layers) {
+        weights.emplace_back(layerPtr->saveWeights());
+    }
+
+    std::ofstream file(path, std::ios::binary | std::ios::trunc);
+
+    if (!file) {
+        std::cerr << "Error opening file for writing.\n";
+        return;
+    }
+
+    uint32_t count = static_cast<uint32_t>(weights.size());
+    file.write(reinterpret_cast<const char*>(&count), sizeof(count));
+
+    for (const auto &obj : weights) {
+        uint32_t typeVal = static_cast<uint32_t>(obj->getType());
+        file.write(reinterpret_cast<const char*>(&typeVal), sizeof(typeVal));
+        obj->serialize(file);
+    }
+    file.close();
 }

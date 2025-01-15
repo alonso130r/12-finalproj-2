@@ -3,6 +3,7 @@
 //
 
 #include "MaxPoolingLayer.h"
+#include "../tools/PoolingWeights.h"
 
 template <typename Type>
 MaxPoolingLayer<Type>::MaxPoolingLayer(int pool_height, int pool_width, int stride, int padding)
@@ -31,4 +32,9 @@ ssize_t MaxPoolingLayer<Type>::getNumParams() const {
 template<typename Type>
 void MaxPoolingLayer<Type>::zeroGrad() {
     // do nothing
+}
+
+template <typename Type>
+std::shared_ptr<WeightStruct<Type>> MaxPoolingLayer<Type>::saveWeights() {
+    return std::make_shared<PoolingWeights<Type>>(*this);
 }

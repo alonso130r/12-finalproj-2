@@ -21,6 +21,6 @@ public:
     void backward(const std::shared_ptr<Tensor<Type>> &loss_grad); // perform a backward pass through the graph
 };
 
-//#include "ComputationGraph.tpp"
+#include "ComputationGraph.tpp"
 
 #endif //INC_12_FINALPROJ_2_COMPUTATIONGRAPH_H

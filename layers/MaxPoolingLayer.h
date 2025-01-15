@@ -8,6 +8,7 @@
 #include "../tools/Operation.h"
 #include "../tools/MaxPoolingOperation.h"
 #include "../tools/Tensor.h"
+#include "Layer.h"
 #include <memory>
 
 template <typename Type>
@@ -16,16 +17,18 @@ private:
     std::shared_ptr<MaxPoolingOperation<Type>> maxPoolOp;
 
 public:
+    int pool_height;
+    int pool_width;
+    int stride;
+    int padding;
+
     MaxPoolingLayer(int pool_height, int pool_width, int stride = 1, int padding = 0);
     std::shared_ptr<Tensor<Type>> forward(std::shared_ptr<Tensor<Type>> &input);
     std::shared_ptr<Tensor<Type>> backward(std::shared_ptr<Tensor<Type>> &dOut);
     [[nodiscard]] ssize_t getNumParams() const override;
     void zeroGrad() override;
+    std::shared_ptr<WeightStruct<Type>> saveWeights() override;
 
-    int pool_height;
-    int pool_width;
-    int stride;
-    int padding;
 };
 
 #include "MaxPoolingLayer.tpp"

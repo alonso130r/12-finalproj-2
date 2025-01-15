@@ -12,17 +12,17 @@ MaxPoolingOperation<Type>::MaxPoolingOperation(int pool_height, int pool_width, 
 
 template <typename Type>
 std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::forward(const std::shared_ptr<Tensor<Type>> &input) {
-    int batch_size = input.shape[0];
-    int channels = input.data[0].size();
-    int input_height = input.data[0][0].size();
-    int input_width = input.data[0][0][0].size();
+    int batch_size = input->data.size();
+    int channels = input->data[0].size();
+    int input_height = input->data[0][0].size();
+    int input_width = input->data[0][0][0].size();
 
     // output dimensions
     int out_height = (input_height + 2 * padding - pool_height) / stride + 1;
     int out_width = (input_width + 2 * padding - pool_width) / stride + 1;
 
     // output tensor
-    Tensor output(batch_size, channels, out_height, out_width, 0.0);
+    Tensor output(batch_size, channels, out_height, out_width, static_cast<Type>(0.0));
 
     // max_indices
     max_indices.resize(batch_size, std::vector<std::vector<std::vector<std::pair<int, int>>>>(
@@ -46,8 +46,8 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::forward(const std::shar
                     // iterate over the pooling window to find the max value and its position
                     for(int ph = h_start; ph < h_end; ++ph) {
                         for(int pw = w_start; pw < w_end; ++pw) {
-                            if(input.data[n][c][ph][pw] > max_val) {
-                                max_val = input.data[n][c][ph][pw];
+                            if(input->data[n][c][ph][pw] > max_val) {
+                                max_val = input->data[n][c][ph][pw];
                                 max_pos = {ph, pw};
                             }
                         }
@@ -60,21 +60,16 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::forward(const std::shar
         }
     }
 
-    return output;
+    return std::make_shared<Tensor<Type>>(output);
 }
 
 template <typename Type>
 std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::shared_ptr<Tensor<Type>>& output_grad) {
-    if(this->inputs.empty()) {
+    if(this->inputs->data.empty()) {
         throw std::runtime_error("MaxPoolingOperation has no input tensors stored. Perform forward pass before backward.");
     }
 
-    // assume single input tensor
-    if(this->inputs.size() != 1) {
-        throw std::invalid_argument("MaxPoolingOperation expects exactly one input tensor.");
-    }
-
-    auto input_tensor = this->inputs[0];
+    auto input_tensor = this->inputs;
 
     int batch_size = output_grad->data.size();
     int channels = output_grad->data[0].size();
@@ -109,7 +104,7 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::sha
     // remove padding from dInput if necessary
     if(padding > 0) {
         Tensor4D dInput_unpadded(batch_size, Tensor3D(channels, std::vector<std::vector<Type>>(
-                input_height_calc, std::vector<Type>(input_width_calc, 0.0))));
+                input_height_calc, std::vector<Type>(input_width_calc, static_cast<Type>(0.0)))));
 
         for(int n = 0; n < batch_size; ++n) {
             for(int c = 0; c < channels; ++c) {

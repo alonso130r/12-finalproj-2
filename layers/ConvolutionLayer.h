@@ -8,6 +8,8 @@
 #include <memory>
 #include "../tools/Tensor.h"
 #include "Layer.h"
+#include <iostream>
+#include <fstream>
 
 template <typename Type>
 class ConvolutionLayer : public Layer<Type> {
@@ -39,14 +41,15 @@ public:
 
     Tensor4D backward(const std::shared_ptr<Tensor<Type>>& dOut);
 
-    void zeroGrad();
+    void zeroGrad() override;
 
-    [[nodiscard]] ssize_t getNumParams() const;
+    [[nodiscard]] ssize_t getNumParams() const override;
 
     void setFilters(const Filters& new_filters);
     void setBiases(const std::vector<Type>& new_biases);
+    std::shared_ptr<WeightStruct<Type>> saveWeights() override;
 };
 
-//#include "ConvolutionLayer.tpp"
+#include "ConvolutionLayer.tpp"
 
 #endif // CONVOLUTION_LAYER_H

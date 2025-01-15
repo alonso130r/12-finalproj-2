@@ -21,7 +21,7 @@ public:
     Tensor4D grad;
     std::shared_ptr<Operation<Type>> creator; // points to operation that made it/edited it, for computation graphs
 
-//    Tensor() = default;
+    Tensor() = default;
     Tensor(int batch_size, int channels, int height, int width, Type value = 0.0);
 
     void zeroGrad(); // to clear the gradients

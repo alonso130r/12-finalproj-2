@@ -32,9 +32,11 @@ public:
 
     void zeroGrad();
 
+    std::shared_ptr<WeightStruct<Type>> saveWeights() override;
+
     [[nodiscard]] ssize_t getNumParams() const;
 };
 
-//#include "FullyConnectedLayer.tpp"
+#include "FullyConnectedLayer.tpp"
 
 #endif //INC_12_FINALPROJ_2_FULLYCONNECTEDLAYER_H

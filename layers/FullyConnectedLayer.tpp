@@ -3,6 +3,7 @@
 //
 
 #include "FullyConnectedLayer.h"
+#include "../tools/ConnectedWeights.h"
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -45,6 +46,8 @@ void FullyConnectedLayer<Type>::initializeParams() {
     dBiases.resize(out_features, static_cast<Type>(0.0));
 }
 
+
+
 /*
  * Zero the gradients
  */
@@ -64,4 +67,9 @@ ssize_t FullyConnectedLayer<Type>::getNumParams() const {
     size_t wParams = (size_t)out_features * (size_t)in_features;
     size_t bParams = biases.size();
     return wParams + bParams;
+}
+
+template <typename Type>
+std::shared_ptr<WeightStruct<Type>> FullyConnectedLayer<Type>::saveWeights() {
+    return std::make_shared<ConnectedWeights<Type>>(*this);
 }
