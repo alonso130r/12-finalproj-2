@@ -3,8 +3,6 @@
 //
 
 #include "ConvolutionalWeights.h"
-#include "../layers/ConvolutionLayer.h"
-#include "../layers/ConvolutionLayer.h"
 
 template <typename Type>
 ConvolutionalWeights<Type>::ConvolutionalWeights(ConvolutionLayer<Type> const& layer) {

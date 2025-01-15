@@ -8,6 +8,7 @@
 #include "../tools/Operation.h"
 #include "../tools/MaxPoolingOperation.h"
 #include "../tools/Tensor.h"
+#include "Layer.h"
 #include <memory>
 
 template <typename Type>
@@ -26,7 +27,7 @@ public:
     std::shared_ptr<Tensor<Type>> backward(std::shared_ptr<Tensor<Type>> &dOut);
     [[nodiscard]] ssize_t getNumParams() const override;
     void zeroGrad() override;
-    std::shared_ptr<WeightStruct<Type>> saveWeights(const std::string location) override;
+    std::shared_ptr<WeightStruct<Type>> saveWeights() override;
 
 };
 

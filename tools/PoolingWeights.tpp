@@ -3,8 +3,6 @@
 //
 
 #include "PoolingWeights.h"
-#include "../layers/MaxPoolingLayer.h"
-#include "../layers/MaxPoolingLayer.h"
 
 template <typename Type>
 PoolingWeights<Type>::PoolingWeights(MaxPoolingLayer<Type> const& layer) {

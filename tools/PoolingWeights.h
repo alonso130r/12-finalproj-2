@@ -6,8 +6,9 @@
 #define POOLINGWEIGHTS_H
 
 #include "WeightStruct.h"
-#include "../layers/MaxPoolingLayer.h"
 
+template <typename Type>
+class MaxPoolingLayer;
 
 template <typename Type>
 struct PoolingWeights : public WeightStruct<Type> {

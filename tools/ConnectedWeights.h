@@ -6,7 +6,9 @@
 #define CONNECTEDWEIGHTS_H
 
 #include <vector>
-#include "../layers/FullyConnectedLayer.h"
+
+template <typename Type>
+class FullyConnectedLayer;
 
 template <typename Type>
 struct ConnectedWeights : public WeightStruct<Type> {

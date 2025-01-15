@@ -32,8 +32,7 @@ public:
 
     void zeroGrad();
 
-    std::shared_ptr<WeightStruct<Type>> saveWeights(const std::string location) override;
-
+    std::shared_ptr<WeightStruct<Type>> saveWeights() override;
 
     [[nodiscard]] ssize_t getNumParams() const;
 };

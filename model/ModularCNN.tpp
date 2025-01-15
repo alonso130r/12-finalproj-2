@@ -137,10 +137,10 @@ ssize_t ModularCNN<Type>::getTotalParams() const {
 
 template <typename Type>
 void ModularCNN<Type>::saveWeights(const std::string path) {
-    std::vector<WeightStruct<Type>> weights;
+    std::vector<std::shared_ptr<WeightStruct<Type>>> weights;
 
     for(auto &layerPtr : layers) {
-        weights.push_back(layerPtr->saveWeights());
+        weights.emplace_back(layerPtr->saveWeights());
     }
 
     std::ofstream file(path, std::ios::binary | std::ios::trunc);

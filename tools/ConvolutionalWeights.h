@@ -5,8 +5,12 @@
 #ifndef CONVOLUTIONALWEIGHTS_H
 #define CONVOLUTIONALWEIGHTS_H
 
-#include "../layers/ConvolutionLayer.h"
 #include <vector>
+#include "WeightStruct.h"
+#include <fstream>
+
+template <typename Type>
+class ConvolutionLayer;
 
 template <typename Type>
 struct ConvolutionalWeights : public WeightStruct<Type> {

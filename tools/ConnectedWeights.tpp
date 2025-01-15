@@ -3,7 +3,6 @@
 //
 
 #include "ConnectedWeights.h"
-#include "../layers/FullyConnectedLayer.h"
 
 template <typename Type>
 ConnectedWeights<Type>::ConnectedWeights(FullyConnectedLayer<Type> const& layer) {

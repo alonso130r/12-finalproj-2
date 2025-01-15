@@ -3,12 +3,12 @@
 //
 
 #include "ConvolutionLayer.h"
-#include "../tools/ConvolutionalWeights.h"
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <stdexcept>
 #include <random>
+
 
 template <typename Type>
 ConvolutionLayer<Type>::ConvolutionLayer(int in_channels, int out_channels, int filter_height, int filter_width, int stride,
@@ -244,7 +244,8 @@ ssize_t ConvolutionLayer<Type>::getNumParams() const {
     return filterParams + biasParams;
 }
 
+#include "../tools/ConvolutionalWeights.h"
 template <typename Type>
-std::shared_ptr<WeightStruct<Type>> ConvolutionLayer<Type>::saveWeights(const std::string location) {
+std::shared_ptr<WeightStruct<Type>> ConvolutionLayer<Type>::saveWeights() {
     return std::make_shared<ConvolutionalWeights<Type>>(*this);
 }
