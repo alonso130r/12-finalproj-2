@@ -9,7 +9,7 @@
 #include "../layers/FullyConnectedLayer.h"
 
 template <typename Type>
-struct ConnectedWeights {
+struct ConnectedWeights : public WeightStruct<Type> {
     typedef std::vector<std::vector<Type>> WeightsMatrix;
 
     int in_features;
@@ -19,6 +19,7 @@ struct ConnectedWeights {
     std::vector<Type> biases;
 
     ConnectedWeights(const FullyConnectedLayer<Type>& layer);
+    WeightStructType getType() const override;
 };
 
 #include "ConnectedWeights.tpp"

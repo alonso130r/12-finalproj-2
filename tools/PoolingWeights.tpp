@@ -11,3 +11,8 @@ PoolingWeights<Type>::PoolingWeights(MaxPoolingLayer<Type> const& layer) {
       stride = layer->stride;
       padding = layer->padding;
 }
+
+template <typename Type>
+WeightStructType PoolingWeights<Type>::getType() const {
+      return WeightStructType::PoolingWeights;
+}

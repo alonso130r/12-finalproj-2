@@ -11,3 +11,8 @@ ConnectedWeights<Type>::ConnectedWeights(FullyConnectedLayer<Type> const& layer)
     weights = layer->weights;
     biases = layer->biases;
 }
+
+template <typename Type>
+WeightStructType ConnectedWeights<Type>::getType() const {
+    return WeightStructType::ConnectedWeights;
+}

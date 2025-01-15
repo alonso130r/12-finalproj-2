@@ -15,3 +15,8 @@ ConvolutionalWeights<Type>::ConvolutionalWeights(ConvolutionLayer<Type> const& l
     filters = layer->filters;
     biases = layer->biases;
 }
+
+template <typename Type>
+WeightStructType ConvolutionalWeights<Type>::getType() const {
+    return WeightStructType::ConvolutionalWeights;
+}

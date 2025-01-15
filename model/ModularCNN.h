@@ -22,6 +22,9 @@
 #include "../tools/WeightStruct.h"
 #include <iostream>
 #include <fstream>
+#include "../tools/ConnectedWeights.h"
+#include "../tools/ConvolutionalWeights.h"
+#include "../tools/PoolingWeights.h"
 
 /**
  * @brief A fully modular CNN class that allows specifying an arbitrary sequence
@@ -49,7 +52,7 @@ public:
 
     void zeroGrad();
 
-    void saveWeights();
+    void saveWeights(const std::string path);
 
     [[nodiscard]] ssize_t getTotalParams() const;
 };

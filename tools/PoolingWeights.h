@@ -17,6 +17,7 @@ struct PoolingWeights : public WeightStruct<Type> {
     int padding;
 
     PoolingWeights(const MaxPoolingLayer<Type>& layer);
+    WeightStructType getType() const override;
 
 };
 

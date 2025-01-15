@@ -9,7 +9,7 @@
 #include "../layers/ConvolutionLayer.h"
 
 template <typename Type>
-struct ConvolutionalWeights {
+struct ConvolutionalWeights : public WeightStruct<Type> {
     typedef std::vector<std::vector<std::vector<Type>>> Tensor3D; // (channels, height, width)
     typedef std::vector<std::vector<std::vector<std::vector<Type>>>> Tensor4D; // (batch_size, channels, height, width)
     typedef std::vector<Tensor3D> Filters; // (out_channels, in_channels, filter_height, filter_width)
@@ -24,6 +24,7 @@ struct ConvolutionalWeights {
     std::vector<Type> biases;
 
     ConvolutionalWeights(const ConvolutionLayer<Type>& layer);
+    WeightStructType getType() const override;
 };
 
 #include "ConvolutionalWeights.tpp"

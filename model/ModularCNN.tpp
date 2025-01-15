@@ -108,9 +108,24 @@ ssize_t ModularCNN<Type>::getTotalParams() const {
 }
 
 template <typename Type>
-void ModularCNN<Type>::saveWeights() {
+void ModularCNN<Type>::saveWeights(const std::string path) {
     std::vector<WeightStruct<Type>> weights;
+
     for(auto &layerPtr : layers) {
         weights.push_back(layerPtr->saveWeights());
+    }
+
+    std::ofstream file(path, std::ios::binary | std::ios::trunc);
+
+    if (!file) {
+        std::cerr << "Error opening file for writing.\n";
+        return;
+    }
+
+    uint32_t count = static_cast<uint32_t>(weights.size());
+    file.write(reinterpret_cast<const char*>(&count), sizeof(count));
+
+    for (const auto &obj : weights) {
+
     }
 }

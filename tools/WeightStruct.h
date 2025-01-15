@@ -10,9 +10,15 @@
 #include <memory>
 #include <string>
 
+enum class WeightStructType : int {
+    ConvolutionalWeights = 0,
+    PoolingWeights = 1,
+    ConnectedWeights = 2
+};
+
 template <typename Type>
 struct WeightStruct {
-
+    virtual WeightStructType getType() const = 0;
 };
 
 
