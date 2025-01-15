@@ -6,6 +6,7 @@
 #define CONVOLUTIONALWEIGHTS_H
 
 #include <vector>
+
 #include "../layers/ConvolutionLayer.h"
 
 template <typename Type>
@@ -25,6 +26,8 @@ struct ConvolutionalWeights : public WeightStruct<Type> {
 
     ConvolutionalWeights(const ConvolutionLayer<Type>& layer);
     WeightStructType getType() const override;
+    void serialize(std::ofstream& out) const override;
+    static std::shared_ptr<ConvolutionLayer<Type>> deserialize(std::ifstream& in);
 };
 
 #include "ConvolutionalWeights.tpp"

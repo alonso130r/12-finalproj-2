@@ -126,6 +126,7 @@ void ModularCNN<Type>::saveWeights(const std::string path) {
     file.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
     for (const auto &obj : weights) {
-
+        uint32_t typeVal = static_cast<uint32_t>(obj->getType());
+        file.write(reinterpret_cast<const char*>(&typeVal), sizeof(typeVal));
     }
 }

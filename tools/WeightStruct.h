@@ -9,6 +9,7 @@
 #include "Tensor.h"
 #include <memory>
 #include <string>
+#include <iostream>
 
 enum class WeightStructType : int {
     ConvolutionalWeights = 0,
@@ -19,6 +20,7 @@ enum class WeightStructType : int {
 template <typename Type>
 struct WeightStruct {
     virtual WeightStructType getType() const = 0;
+    virtual void serialize(std::ofstream& out) const = 0;
 };
 
 
