@@ -18,8 +18,8 @@ struct ConnectedWeights : public WeightStruct<Type> {
     WeightsMatrix weights;
     std::vector<Type> biases;
 
-    ConnectedWeights(const FullyConnectedLayer<Type>& layer);
-    WeightStructType getType() const override;
+    explicit ConnectedWeights(const FullyConnectedLayer<Type>& layer);
+    [[nodiscard]] WeightStructType getType() const override;
     void serialize(std::ofstream& out) const override;
     static std::shared_ptr<FullyConnectedLayer<Type>> deserialize(std::ifstream& in);
 };

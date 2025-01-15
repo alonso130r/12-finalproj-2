@@ -2,6 +2,7 @@
 // Created by Vijay Goyal on 2025-01-08.
 //
 
+#include "../tools/PoolingWeights.h"
 #include "MaxPoolingLayer.h"
 
 template <typename Type>

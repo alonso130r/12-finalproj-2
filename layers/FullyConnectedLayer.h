@@ -11,7 +11,6 @@
 #include <cmath>
 #include "../tools/Tensor.h"
 #include "Layer.h"
-#include "../tools/ConnectedWeights.h"
 
 template <typename Type>
 class FullyConnectedLayer : public Layer<Type> {

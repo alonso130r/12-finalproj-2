@@ -3,6 +3,7 @@
 //
 
 #include "FullyConnectedLayer.h"
+#include "../tools/ConnectedWeights.h"
 #include <cmath>
 #include <cstdlib>
 #include <ctime>

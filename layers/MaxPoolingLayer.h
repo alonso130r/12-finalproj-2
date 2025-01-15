@@ -9,7 +9,6 @@
 #include "../tools/MaxPoolingOperation.h"
 #include "../tools/Tensor.h"
 #include <memory>
-#include "../tools/PoolingWeights.h"
 
 template <typename Type>
 class MaxPoolingLayer : public Layer<Type> {

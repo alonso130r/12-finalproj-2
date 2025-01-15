@@ -3,6 +3,7 @@
 //
 
 #include "ConvolutionLayer.h"
+#include "../tools/ConvolutionalWeights.h"
 #include <cmath>
 #include <cstdlib>
 #include <ctime>

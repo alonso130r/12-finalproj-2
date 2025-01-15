@@ -5,9 +5,8 @@
 #ifndef CONVOLUTIONALWEIGHTS_H
 #define CONVOLUTIONALWEIGHTS_H
 
-#include <vector>
-
 #include "../layers/ConvolutionLayer.h"
+#include <vector>
 
 template <typename Type>
 struct ConvolutionalWeights : public WeightStruct<Type> {
@@ -24,8 +23,8 @@ struct ConvolutionalWeights : public WeightStruct<Type> {
     Filters filters;
     std::vector<Type> biases;
 
-    ConvolutionalWeights(const ConvolutionLayer<Type>& layer);
-    WeightStructType getType() const override;
+    explicit ConvolutionalWeights(const ConvolutionLayer<Type>& layer);
+    [[nodiscard]] WeightStructType getType() const override;
     void serialize(std::ofstream& out) const override;
     static std::shared_ptr<ConvolutionLayer<Type>> deserialize(std::ifstream& in);
 };

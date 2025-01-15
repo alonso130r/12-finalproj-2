@@ -7,7 +7,6 @@
 
 #include "WeightStruct.h"
 #include "../layers/MaxPoolingLayer.h"
-#include "../layers/MaxPoolingLayer.h"
 
 
 template <typename Type>
@@ -17,8 +16,8 @@ struct PoolingWeights : public WeightStruct<Type> {
     int stride;
     int padding;
 
-    PoolingWeights(const MaxPoolingLayer<Type>& layer);
-    WeightStructType getType() const override;
+    explicit PoolingWeights(const MaxPoolingLayer<Type>& layer);
+    [[nodiscard]] WeightStructType getType() const override;
     void serialize(std::ofstream& out) const override;
     static std::shared_ptr<MaxPoolingLayer<Type>> deserialize(std::ifstream& in);
 

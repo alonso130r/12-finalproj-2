@@ -10,7 +10,6 @@
 #include "Layer.h"
 #include <iostream>
 #include <fstream>
-#include "../tools/ConvolutionalWeights.h"
 
 template <typename Type>
 class ConvolutionLayer : public Layer<Type> {
