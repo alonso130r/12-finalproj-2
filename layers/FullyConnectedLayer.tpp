@@ -71,5 +71,5 @@ ssize_t FullyConnectedLayer<Type>::getNumParams() const {
 
 template <typename Type>
 std::shared_ptr<WeightStruct<Type>> FullyConnectedLayer<Type>::saveWeights(const std::string location) {
-    return std::make_shared<ConnectedWeights<Type>>(this);
+    return std::make_shared<ConnectedWeights<Type>>(*this);
 }

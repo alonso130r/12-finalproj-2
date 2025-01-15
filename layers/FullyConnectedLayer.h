@@ -30,8 +30,6 @@ public:
 
     void initializeParams();
 
-
-
     void zeroGrad();
 
     std::shared_ptr<WeightStruct<Type>> saveWeights(const std::string location) override;

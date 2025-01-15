@@ -3,6 +3,7 @@
 //
 
 #include <cstddef>
+#include <string>
 typedef size_t rsize_t;
 #include <_string.h>
 #include <sys/types.h>
@@ -24,6 +25,10 @@ typedef size_t rsize_t;
 #include "../layers/Layer.h"
 #include "../layers/MaxPoolingLayer.h"
 #include "../tools/CrossEntropy.h"
+#include "../tools/ConvolutionalWeights.h"
+#include "../tools/ConnectedWeights.h"
+#include "../tools/PoolingWeights.h"
+#include "../tools/WeightStruct.h"
 
 using bfloat = std::bfloat16_t;
 
@@ -66,6 +71,7 @@ PYBIND11_MODULE(ModularCNN, m) {
 
     class_<ModularCNN<bfloat>>(m, "ModularCNN")
         .def(init<std::vector<LayerConfig>>())
+        .def(init<std::string>())
         .def("buildGraph", &ModularCNN<bfloat>::buildGraph)
         .def("forward", &ModularCNN<bfloat>::forward)
         .def("zeroGrad", &ModularCNN<bfloat>::zeroGrad)
@@ -73,17 +79,29 @@ PYBIND11_MODULE(ModularCNN, m) {
 
     class_<ConvolutionLayer<bfloat>>(m, "ConvolutionLayer")
         .def(init<int, int, int, int, int, int>())
+        .def_readwrite("filters", &ConvolutionLayer<bfloat>::filters)
+        .def_readwrite("biases", &ConvolutionLayer<bfloat>::biases)
+        .def("initializeFilters", &ConvolutionLayer<bfloat>::initializeFilters)
         .def("forward", &ConvolutionLayer<bfloat>::forward)
-        .def("backward", &ConvolutionLayer<bfloat>::backward);
+        .def("backward", &ConvolutionLayer<bfloat>::backward)
+        .def("getNumParams", &ConvolutionLayer<bfloat>::getNumParams)
+        .def("zeroGrad", &ConvolutionLayer<bfloat>::zeroGrad)
+        .def("setFilters", &ConvolutionLayer<bfloat>::setFilters)
+        .def("setBiases", &ConvolutionLayer<bfloat>::setBiases)
+        .def("saveWeights", &ConvolutionLayer<bfloat>::saveWeights);
 
     class_<MaxPoolingLayer<bfloat>>(m, "MaxPoolingLayer")
         .def(init<int, int, int, int>())
         .def("forward", &MaxPoolingLayer<bfloat>::forward)
         .def("backward", &MaxPoolingLayer<bfloat>::backward)
-        .def("getNumParams", &MaxPoolingLayer<bfloat>::getNumParams);
+        .def("zeroGrad", &MaxPoolingLayer<bfloat>::zeroGrad)
+        .def("getNumParams", &MaxPoolingLayer<bfloat>::getNumParams)
+        .def("saveWeights", &MaxPoolingLayer<bfloat>::saveWeights);
 
     class_<FullyConnectedLayer<bfloat>>(m, "FullyConnectedLayer")
         .def(init<int, int>())
+        .def_readwrite("weights", &FullyConnectedLayer<bfloat>::weights)
+        .def_readwrite("biases", &FullyConnectedLayer<bfloat>::biases)
         .def("initializeParams", &FullyConnectedLayer<bfloat>::initializeParams)
         .def("zeroGrad", &FullyConnectedLayer<bfloat>::zeroGrad)
         .def("getNumParams", &FullyConnectedLayer<bfloat>::getNumParams);
@@ -113,4 +131,26 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("update", overload_cast<FullyConnectedLayer<bfloat>&,
                 const std::vector<std::vector<bfloat>>&,
                 const std::vector<bfloat>&>(&AMSGrad<bfloat>::update));
+
+    class_<WeightStruct<bfloat>>(m, "WeightStruct")
+        .def("getType", &WeightStruct<bfloat>::getType)
+        .def("serialize", &WeightStruct<bfloat>::serialize);
+
+    class_<ConvolutionalWeights<bfloat>>(m, "ConvolutionalWeights")
+        .def(init<const ConvolutionLayer<bfloat>&>())
+        .def("getType", &ConvolutionalWeights<bfloat>::getType)
+        .def("serialize", &ConvolutionalWeights<bfloat>::serialize)
+        .def_static("deserialize", &ConvolutionalWeights<bfloat>::deserialize);
+
+    class_<ConnectedWeights<bfloat>>(m, "ConnectedWeights")
+        .def(init<const FullyConnectedLayer<bfloat>&>())
+        .def("getType", &ConnectedWeights<bfloat>::getType)
+        .def("serialize", &ConnectedWeights<bfloat>::serialize)
+        .def_static("deserialize", &ConnectedWeights<bfloat>::deserialize);
+
+    class_<PoolingWeights<bfloat>>(m, "PoolingWeights")
+        .def(init<const MaxPoolingLayer<bfloat>&>())
+        .def("getType", &PoolingWeights<bfloat>::getType)
+        .def("serialize", &PoolingWeights<bfloat>::serialize)
+        .def_static("deserialize", &PoolingWeights<bfloat>::deserialize);
 }

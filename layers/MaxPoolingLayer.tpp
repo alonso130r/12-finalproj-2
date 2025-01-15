@@ -36,5 +36,5 @@ void MaxPoolingLayer<Type>::zeroGrad() {
 
 template <typename Type>
 std::shared_ptr<WeightStruct<Type>> MaxPoolingLayer<Type>::saveWeights(const std::string location) {
-    return std::make_shared<PoolingWeights<Type>>(this);
+    return std::make_shared<PoolingWeights<Type>>(*this);
 }

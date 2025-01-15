@@ -99,7 +99,7 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
         for(int f = 0; f < out_channels; ++f) {
             for(int h = 0; h < out_height; ++h) {
                 for(int w = 0; w < out_width; ++w) {
-                    double sum = 0.0;
+                    Type sum = static_cast<Type>(0.0);
                     for(int c = 0; c < in_channels; ++c) {
                         for(int kh = 0; kh < filter_height; ++kh) {
                             for(int kw = 0; kw < filter_width; ++kw) {
@@ -110,16 +110,16 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
                         }
                     }
                     sum += biases[f]; // bias
-                    pre_activation[n][f][h][w] = sum; // cache pre-activation
+                    pre_activation[n][f][h][w] = static_cast<Type>(sum); // cache pre-activation
                     // relu
-                    output->data[n][f][h][w] = sum > 0 ? sum : 0.0;
+                    output->data[n][f][h][w] = sum > static_cast<Type>(0) ? sum : static_cast<Type>(0.0);
                 }
             }
         }
     }
 
     // set creator operation(for computation graph)
-     output->creator = this;
+//     output->creator = this;
 
     return output;
 }
@@ -246,5 +246,5 @@ ssize_t ConvolutionLayer<Type>::getNumParams() const {
 
 template <typename Type>
 std::shared_ptr<WeightStruct<Type>> ConvolutionLayer<Type>::saveWeights(const std::string location) {
-    return std::make_shared<ConvolutionalWeights<Type>>(this);
+    return std::make_shared<ConvolutionalWeights<Type>>(*this);
 }

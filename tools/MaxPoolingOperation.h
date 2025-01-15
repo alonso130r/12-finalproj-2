@@ -31,6 +31,6 @@ public:
     std::shared_ptr<Tensor<Type>> backward(const std::shared_ptr<Tensor<Type>>& output_grad) override;
 };
 
-//#include "MaxPoolingOperation.tpp"
+#include "MaxPoolingOperation.tpp"
 
 #endif //INC_12_FINALPROJ_2_MAXPOOLINGOPERATION_H
