@@ -5,6 +5,7 @@
 #ifndef INC_12_FINALPROJ_2_LAYERCONFIG_H
 #define INC_12_FINALPROJ_2_LAYERCONFIG_H
 
+#include <cstddef>
 #include <string>
 
 /**
