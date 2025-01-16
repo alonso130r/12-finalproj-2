@@ -7,11 +7,11 @@
 typedef size_t rsize_t;
 #include <_string.h>
 #include <sys/types.h>
+#include "../tools/LayerConfig.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <stdfloat>
 #include <vector>
-#include "../tools/LayerConfig.h"
 #include "../tools/Tensor.h"
 #include "../tools/ConvolutionalWeights.h"
 #include "../tools/ConnectedWeights.h"
@@ -34,36 +34,20 @@ typedef size_t rsize_t;
 #include "../tools/CrossEntropy.h"
 
 
-using bfloat = std::bfloat16_t;
+using bfloat = float;
 
 using namespace pybind11;
 
 PYBIND11_MODULE(ModularCNN, m) {
     m.doc() = "Modular CNN implementation in C++";
 
-    class_<LayerConfig>(m, "LayerConfig")
-        .def_static("conv", &LayerConfig::conv)
-        .def_static("pool", &LayerConfig::pool)
-        .def_static("fc", &LayerConfig::fc)
-        .def_readwrite("type", &LayerConfig::type)
-        .def_readwrite("in_channels", &LayerConfig::in_channels)
-        .def_readwrite("out_channels", &LayerConfig::out_channels)
-        .def_readwrite("filter_height", &LayerConfig::filter_height)
-        .def_readwrite("filter_width", &LayerConfig::filter_width)
-        .def_readwrite("stride", &LayerConfig::stride)
-        .def_readwrite("padding", &LayerConfig::padding)
-        .def_readwrite("pool_height", &LayerConfig::pool_height)
-        .def_readwrite("pool_width", &LayerConfig::pool_width)
-        .def_readwrite("in_features", &LayerConfig::in_features)
-        .def_readwrite("out_features", &LayerConfig::out_features);
-
     class_<Tensor<bfloat>>(m, "Tensor")
-        .def(init<int, int, int, int, bfloat>())
-        .def(init<>())
-        .def_readwrite("data", &Tensor<bfloat>::data)
-        .def_readwrite("grad", &Tensor<bfloat>::grad)
-        .def_readwrite("creator", &Tensor<bfloat>::creator)
-        .def("zeroGrad", &Tensor<bfloat>::zeroGrad);
+            .def(init<int, int, int, int, bfloat>())
+            .def(init<>())
+            .def_readwrite("data", &Tensor<bfloat>::data)
+            .def_readwrite("grad", &Tensor<bfloat>::grad)
+            .def_readwrite("creator", &Tensor<bfloat>::creator)
+            .def("zeroGrad", &Tensor<bfloat>::zeroGrad);
 
     class_<Layer<bfloat>>(m, "Layer")
         .def("getNumParams", &Layer<bfloat>::getNumParams)
@@ -202,4 +186,20 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("getType", &PoolingWeights<bfloat>::getType)
         .def("serialize", &PoolingWeights<bfloat>::serialize)
         .def_static("deserialize", &PoolingWeights<bfloat>::deserialize);
+
+    class_<LayerConfig>(m, "LayerConfig")
+            .def_static("conv", &LayerConfig::conv)
+            .def_static("pool", &LayerConfig::pool)
+            .def_static("fc", &LayerConfig::fc)
+            .def_readwrite("type", &LayerConfig::type)
+            .def_readwrite("in_channels", &LayerConfig::in_channels)
+            .def_readwrite("out_channels", &LayerConfig::out_channels)
+            .def_readwrite("filter_height", &LayerConfig::filter_height)
+            .def_readwrite("filter_width", &LayerConfig::filter_width)
+            .def_readwrite("stride", &LayerConfig::stride)
+            .def_readwrite("padding", &LayerConfig::padding)
+            .def_readwrite("pool_height", &LayerConfig::pool_height)
+            .def_readwrite("pool_width", &LayerConfig::pool_width)
+            .def_readwrite("in_features", &LayerConfig::in_features)
+            .def_readwrite("out_features", &LayerConfig::out_features);
 }
