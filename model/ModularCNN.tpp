@@ -101,21 +101,58 @@ ModularCNN<Type>::ModularCNN(const std::string path) {
         switch (auto type = static_cast<WeightStructType>(typeVal)) {
             case WeightStructType::ConvolutionalWeights:
                 layers.emplace_back(ConvolutionalWeights<Type>::deserialize(file));
+                layerTypes.emplace_back("conv");
                 break;
             case WeightStructType::ConnectedWeights:
                 layers.emplace_back(ConnectedWeights<Type>::deserialize(file));
+                layerTypes.emplace_back("fc");
                 break;
             case WeightStructType::PoolingWeights:
                 layers.emplace_back(PoolingWeights<Type>::deserialize(file));
+                layerTypes.emplace_back("pool");
                 break;
         }
     }
+    buildGraph();
 }
 
 
 template <typename Type>
 std::shared_ptr<Tensor<Type>> ModularCNN<Type>::forward(const std::shared_ptr<Tensor<Type>>& input) {
     return graph.forward(input);
+}
+
+template <typename Type>
+int ModularCNN<Type>::forwards(const std::shared_ptr<Tensor<Type>>& input) {
+    auto output = graph.forward(input);
+    int maxIndex = 0;
+    for (int i = 0; i < output->data.size(); i++) {
+        if (output->data[i][0][0][0] > output->data[maxIndex][0][0][0]) {
+            maxIndex = i;
+        }
+    }
+    return maxIndex;
+}
+
+template <typename Type>
+void ModularCNN<Type>::backward(const std::shared_ptr<Tensor<Type>>& dOut) {
+    graph.backward(dOut);
+}
+
+template <typename Type>
+void ModularCNN<Type>::update(AMSGrad<Type>& optimizer) {
+    int index = 0;
+    for(auto &layerPtr : layers) {
+        if (layerTypes[index] == "conv") {
+            auto *temp = dynamic_cast<ConvolutionLayer<Type>*>(layerPtr.get());
+            optimizer.update(*temp, temp->dFilters, temp->dBiases);
+        }
+        if (layerTypes[index] == "fc") {
+            auto *temp = dynamic_cast<FullyConnectedLayer<Type>*>(layerPtr.get());
+            optimizer.update(*temp, temp->dWeights, temp->dBiases);
+        }
+        index++;
+    }
 }
 
 template <typename Type>

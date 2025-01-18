@@ -25,6 +25,7 @@
 #include "../tools/ConnectedWeights.h"
 #include "../tools/ConvolutionalWeights.h"
 #include "../tools/PoolingWeights.h"
+#include "../tools/AMSGrad.h"
 
 /**
  * @brief A fully modular CNN class that allows specifying an arbitrary sequence
@@ -49,6 +50,11 @@ public:
     void buildGraph();
 
     std::shared_ptr<Tensor<Type>> forward(const std::shared_ptr<Tensor<Type>>& input);
+    int forwards(const std::shared_ptr<Tensor<Type>>& input);
+
+    void backward(const std::shared_ptr<Tensor<Type>>& dOut);
+
+    void update(AMSGrad<Type>& optimizer);
 
     void zeroGrad();
 

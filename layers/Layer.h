@@ -11,6 +11,7 @@
 template <typename Type>
 class Layer {
 public:
+    virtual ~Layer() = default;
    [[nodiscard]] virtual ssize_t getNumParams() const = 0;
    virtual void zeroGrad() = 0;
    virtual std::shared_ptr<WeightStruct<Type>> saveWeights() = 0;

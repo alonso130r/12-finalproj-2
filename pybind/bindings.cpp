@@ -75,6 +75,9 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def(init<std::string>())
         .def("buildGraph", &ModularCNN<bfloat>::buildGraph)
         .def("forward", &ModularCNN<bfloat>::forward)
+        .def("forwards", &ModularCNN<bfloat>::forwards)
+        .def("backward", &ModularCNN<bfloat>::backward)
+        .def("update", &ModularCNN<bfloat>::update)
         .def("zeroGrad", &ModularCNN<bfloat>::zeroGrad)
         .def("saveWeights", &ModularCNN<bfloat>::saveWeights)
         .def("getTotalParams", &ModularCNN<bfloat>::getTotalParams);
