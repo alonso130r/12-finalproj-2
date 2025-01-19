@@ -12,12 +12,13 @@ typedef size_t rsize_t;
 #include <pybind11/stl.h>
 #include <stdfloat>
 #include <vector>
+
 #include "../tools/Tensor.h"
+#include "../tools/WeightStruct.h"
 #include "../tools/ConvolutionalWeights.h"
 #include "../tools/ConnectedWeights.h"
 #include "../tools/PoolingWeights.h"
 #include "../layers/Layer.h"
-#include "../tools/WeightStruct.h"
 #include "../layers/ConvolutionLayer.h"
 #include "../layers/FullyConnectedLayer.h"
 
@@ -28,9 +29,9 @@ typedef size_t rsize_t;
 #include "../tools/ComputationGraph.h"
 
 #include "../layers/MaxPoolingLayer.h"
-
-#include "../model/ModularCNN.h"
 #include "../tools/AMSGrad.h"
+#include "../model/ModularCNN.h"
+
 #include "../tools/CrossEntropy.h"
 
 
