@@ -19,6 +19,7 @@ enum class WeightStructType : int {
 
 template <typename Type>
 struct WeightStruct {
+    virtual ~WeightStruct() = 0;
     [[nodiscard]] virtual WeightStructType getType() const = 0;
     virtual void serialize(std::ofstream& out) const = 0;
 };

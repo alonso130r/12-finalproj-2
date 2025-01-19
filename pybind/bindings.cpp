@@ -41,7 +41,7 @@ using namespace pybind11;
 PYBIND11_MODULE(ModularCNN, m) {
     m.doc() = "Modular CNN implementation in C++";
 
-    class_<Tensor<bfloat>>(m, "Tensor")
+    class_<Tensor<bfloat>, std::shared_ptr<Tensor<bfloat>>>(m, "Tensor")
             .def(init<int, int, int, int, bfloat>())
             .def(init<>())
             .def_readwrite("data", &Tensor<bfloat>::data)
@@ -49,28 +49,28 @@ PYBIND11_MODULE(ModularCNN, m) {
             .def_readwrite("creator", &Tensor<bfloat>::creator)
             .def("zeroGrad", &Tensor<bfloat>::zeroGrad);
 
-    class_<Layer<bfloat>>(m, "Layer")
+    class_<Layer<bfloat>, std::shared_ptr<Layer<bfloat>>>(m, "Layer")
         .def("getNumParams", &Layer<bfloat>::getNumParams)
         .def("zeroGrad", &Layer<bfloat>::zeroGrad)
         .def("saveWeights", &Layer<bfloat>::saveWeights);
 
-    class_<Operation<bfloat>>(m, "Operation")
+    class_<Operation<bfloat>, std::shared_ptr<Operation<bfloat>>>(m, "Operation")
         .def_readwrite("inputs", &Operation<bfloat>::inputs)
         .def("forward", &Operation<bfloat>::forward)
         .def("backward", &Operation<bfloat>::backward);
 
-    class_<CrossEntropy<bfloat>>(m, "CrossEntropy")
+    class_<CrossEntropy<bfloat>, std::shared_ptr<CrossEntropy<bfloat>>>(m, "CrossEntropy")
         .def(init<bool>())
         .def("forward", &CrossEntropy<bfloat>::forward)
         .def("backward", &CrossEntropy<bfloat>::backward);
 
-    class_<ComputationGraph<bfloat>>(m, "ComputationGraph")
+    class_<ComputationGraph<bfloat>, std::shared_ptr<ComputationGraph<bfloat>>>(m, "ComputationGraph")
         .def(init<>())
         .def("addOperation", &ComputationGraph<bfloat>::addOperation)
         .def("forward", &ComputationGraph<bfloat>::forward)
         .def("backward", &ComputationGraph<bfloat>::backward);
 
-    class_<ModularCNN<bfloat>>(m, "ModularCNN")
+    class_<ModularCNN<bfloat>, std::shared_ptr<ModularCNN<bfloat>>>(m, "ModularCNN")
         .def(init<std::vector<LayerConfig>>())
         .def(init<std::string>())
         .def("buildGraph", &ModularCNN<bfloat>::buildGraph)
@@ -82,7 +82,7 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("saveWeights", &ModularCNN<bfloat>::saveWeights)
         .def("getTotalParams", &ModularCNN<bfloat>::getTotalParams);
 
-    class_<ConvolutionLayer<bfloat>>(m, "ConvolutionLayer")
+    class_<ConvolutionLayer<bfloat>, std::shared_ptr<ConvolutionLayer<bfloat>>>(m, "ConvolutionLayer")
         .def(init<int, int, int, int, int, int>())
         .def_readwrite("in_channels", &ConvolutionLayer<bfloat>::in_channels)
         .def_readwrite("out_channels", &ConvolutionLayer<bfloat>::out_channels)
@@ -101,7 +101,7 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("setBiases", &ConvolutionLayer<bfloat>::setBiases)
         .def("saveWeights", &ConvolutionLayer<bfloat>::saveWeights);
 
-    class_<MaxPoolingLayer<bfloat>>(m, "MaxPoolingLayer")
+    class_<MaxPoolingLayer<bfloat>, std::shared_ptr<MaxPoolingLayer<bfloat>>>(m, "MaxPoolingLayer")
         .def(init<int, int, int, int>())
         .def_readwrite("pool_height", &MaxPoolingLayer<bfloat>::pool_height)
         .def_readwrite("pool_width", &MaxPoolingLayer<bfloat>::pool_width)
@@ -113,7 +113,7 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("getNumParams", &MaxPoolingLayer<bfloat>::getNumParams)
         .def("saveWeights", &MaxPoolingLayer<bfloat>::saveWeights);
 
-    class_<FullyConnectedLayer<bfloat>>(m, "FullyConnectedLayer")
+    class_<FullyConnectedLayer<bfloat>, std::shared_ptr<FullyConnectedLayer<bfloat>>>(m, "FullyConnectedLayer")
         .def(init<int, int>())
         .def_readwrite("in_features", &FullyConnectedLayer<bfloat>::in_features)
         .def_readwrite("out_features", &FullyConnectedLayer<bfloat>::out_features)
@@ -126,22 +126,22 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("getNumParams", &FullyConnectedLayer<bfloat>::getNumParams)
         .def("saveWeights", &FullyConnectedLayer<bfloat>::saveWeights);
 
-    class_<ConvolutionOperation<bfloat>>(m, "ConvolutionOperation")
+    class_<ConvolutionOperation<bfloat>, std::shared_ptr<ConvolutionOperation<bfloat>>>(m, "ConvolutionOperation")
         .def(init<ConvolutionLayer<bfloat>&>())
         .def("forward", &ConvolutionOperation<bfloat>::forward)
         .def("backward", &ConvolutionOperation<bfloat>::backward);
 
-    class_<MaxPoolingOperation<bfloat>>(m, "MaxPoolingOperation")
+    class_<MaxPoolingOperation<bfloat>, std::shared_ptr<MaxPoolingOperation<bfloat>>>(m, "MaxPoolingOperation")
         .def(init<int, int, int, int>())
         .def("forward", &MaxPoolingOperation<bfloat>::forward)
         .def("backward", &MaxPoolingOperation<bfloat>::backward);
 
-    class_<FullyConnectedOperation<bfloat>>(m, "FullyConnectedOperation")
+    class_<FullyConnectedOperation<bfloat>, std::shared_ptr<FullyConnectedOperation<bfloat>>>(m, "FullyConnectedOperation")
         .def(init<FullyConnectedLayer<bfloat>&>())
         .def("forward", &FullyConnectedOperation<bfloat>::forward)
         .def("backward", &FullyConnectedOperation<bfloat>::backward);
 
-    class_<AMSGrad<bfloat>>(m, "AMSGrad")
+    class_<AMSGrad<bfloat>, std::shared_ptr<AMSGrad<bfloat>>>(m, "AMSGrad")
         .def(init<double, double, double, double, double>())
         .def("initializeConv", &AMSGrad<bfloat>::initializeConv)
         .def("update", overload_cast<ConvolutionLayer<bfloat>&,
@@ -152,11 +152,11 @@ PYBIND11_MODULE(ModularCNN, m) {
                 const std::vector<std::vector<bfloat>>&,
                 const std::vector<bfloat>&>(&AMSGrad<bfloat>::update));
 
-    class_<WeightStruct<bfloat>>(m, "WeightStruct")
+    class_<WeightStruct<bfloat>, std::shared_ptr<WeightStruct<bfloat>>>(m, "WeightStruct")
         .def("getType", &WeightStruct<bfloat>::getType)
         .def("serialize", &WeightStruct<bfloat>::serialize);
 
-    class_<ConvolutionalWeights<bfloat>>(m, "ConvolutionalWeights")
+    class_<ConvolutionalWeights<bfloat>, std::shared_ptr<ConvolutionalWeights<bfloat>>>(m, "ConvolutionalWeights")
         .def(init<const ConvolutionLayer<bfloat>&>())
         .def_readwrite("in_channels", &ConvolutionalWeights<bfloat>::in_channels)
         .def_readwrite("out_channels", &ConvolutionalWeights<bfloat>::out_channels)
@@ -170,7 +170,7 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("serialize", &ConvolutionalWeights<bfloat>::serialize)
         .def_static("deserialize", &ConvolutionalWeights<bfloat>::deserialize);
 
-    class_<ConnectedWeights<bfloat>>(m, "ConnectedWeights")
+    class_<ConnectedWeights<bfloat>, std::shared_ptr<ConnectedWeights<bfloat>>>(m, "ConnectedWeights")
         .def(init<const FullyConnectedLayer<bfloat>&>())
         .def_readwrite("in_features", &ConnectedWeights<bfloat>::in_features)
         .def_readwrite("out_features", &ConnectedWeights<bfloat>::out_features)
@@ -180,7 +180,7 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("serialize", &ConnectedWeights<bfloat>::serialize)
         .def_static("deserialize", &ConnectedWeights<bfloat>::deserialize);
 
-    class_<PoolingWeights<bfloat>>(m, "PoolingWeights")
+    class_<PoolingWeights<bfloat>, std::shared_ptr<PoolingWeights<bfloat>>>(m, "PoolingWeights")
         .def(init<const MaxPoolingLayer<bfloat>&>())
         .def_readwrite("pool_height", &PoolingWeights<bfloat>::pool_height)
         .def_readwrite("pool_width", &PoolingWeights<bfloat>::pool_width)
@@ -190,7 +190,7 @@ PYBIND11_MODULE(ModularCNN, m) {
         .def("serialize", &PoolingWeights<bfloat>::serialize)
         .def_static("deserialize", &PoolingWeights<bfloat>::deserialize);
 
-    class_<LayerConfig>(m, "LayerConfig")
+    class_<LayerConfig, std::shared_ptr<LayerConfig>>(m, "LayerConfig")
             .def_static("conv", &LayerConfig::conv)
             .def_static("pool", &LayerConfig::pool)
             .def_static("fc", &LayerConfig::fc)
