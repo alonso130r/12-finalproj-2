@@ -16,6 +16,13 @@
  * @brief AdamW + AMSGrad optimizer.
  *        - Adam with decoupled weight decay (AdamW)
  *        - AMSGrad ensures a non-decreasing second-moment estimate v_hat.
+ *        - TIME COMPLEXITY: O(n) for n parameters
+ *            - There are n parameters to update, and each update requires O(1) operations, although there are up to 5 nested for-loops,
+ *           these simply iterate over the dimensions of the weights/filters and biases, and do not depend on the number of parameters.
+ *         - SPACE COMPLEXITY: O(n) for n parameters
+ *              - The optimizer maintains 3 states: m, v, and v_hat, each of which requires the same amount of memory as the parameters being optimized.
+ *              - Each of these states is stored in a separate map, which requires O(n) memory.
+ *              - So technically, the space complexity is O(3n) -> O(n).
  */
 
  template <typename Type>
