@@ -103,32 +103,29 @@ def numpy_to_tensor(np_array, TensorClass):
     batch_size, channels, height, width = np_array.shape
 
     tensor_obj = TensorClass(batch_size, channels, height, width, 0.0)
-    data = tensor_obj.data  # Exposed via pybind11
     for b in range(batch_size):
         for c in range(channels):
             for h in range(height):
                 for w in range(width):
-                    data[b][c][h][w] = float(np_array[b, c, h, w])
+                    tensor_obj.setValue(b, c, h, w, np_array[b, c, h, w])
     return tensor_obj
 
 
-
 def labels_to_tensor(labels_array, TensorClass):
-    """
-    Converts a 1D NumPy array of integer labels to a Tensor object.
-    """
-    if not isinstance(labels_array, np.ndarray):
-        raise TypeError("labels_array must be a NumPy array")
-    if labels_array.ndim != 1:
-        raise ValueError("labels_array must be a 1D array of labels")
-    if not issubclass(labels_array.dtype.type, np.integer):
-        raise TypeError("labels_array must contain integer values")
+    """Convert labels to one-hot encoded tensor"""
     batch_size = labels_array.shape[0]
     channels, height, width = 3, 1, 1
+    
+    # Create tensor
     tensor_labels = TensorClass(batch_size, channels, height, width, 0.0)
-    data = tensor_labels.data
+    
+    # Fill one-hot encoded values using setter
     for b in range(batch_size):
-        data[b][0][0][0] = float(labels_array[b])
+        label = int(labels_array[b])
+        if label < 0 or label >= channels:
+            raise ValueError(f"Label {label} at index {b} is invalid")
+        tensor_labels.setValue(b, label, 0, 0, 1.0)
+    
     return tensor_labels
 
 
@@ -159,28 +156,23 @@ for epoch in range(num_epochs):
         images = batch["image"]
         labels = batch["label"]
 
+        # print(labels)
+
         # labels = np.array(labels)
 
         # Convert NumPy images/labels to your custom Tensors
         images = numpy_to_tensor(images, ModularCNN.Tensor)
         labels = labels_to_tensor(labels, ModularCNN.Tensor)
 
-        # print(len(images.data))
-        # print(len(images.data[0]))
-        # print(len(images.data[0][0]))
-        # print(len(images.data[0][0][0]))
+        # print(images.data)
 
         predictions = model.forward(images)
-        # print("Predictions")
-        # print(len(predictions.data))
-        # print(len(predictions.data[0]))
-        # print(len(predictions.data[0][0]))
-        # print(len(predictions.data[0][0][0]))
+
+        print("Predictions")
+        print(predictions.data)
+
         # print("Labels")
-        # print(len(labels.data))
-        # print(len(labels.data[0]))
-        # print(len(labels.data[0][0]))
-        # print(len(labels.data[0][0][0]))
+        # print(labels.data)
         loss = criterion.forward(predictions, labels)
         criterion.backward(predictions, labels)
 

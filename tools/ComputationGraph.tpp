@@ -3,6 +3,7 @@
 //
 
 #include "ComputationGraph.h"
+#include <iostream>
 
 template <typename Type>
 void ComputationGraph<Type>::addOperation(const std::shared_ptr<Operation<Type>>& operation) {
@@ -16,6 +17,36 @@ std::shared_ptr<Tensor<Type>> ComputationGraph<Type>::forward(const std::shared_
         current = op->forward({current});
     }
     return current;
+
+    // // Print input shape and values
+    // std::cout << "Input shape: " << input->data.size() << "x" 
+    //           << input->data[0].size() << "x"
+    //           << input->data[0][0].size() << "x" 
+    //           << input->data[0][0][0].size() << std::endl;
+
+    // std::shared_ptr<Tensor<Type>> current = input;
+    
+    // // Track and print each operation's output
+    // for(size_t i = 0; i < operations.size(); i++) {
+    //     current = operations[i]->forward({current});
+        
+    //     std::cout << "Operation " << i << " output shape: "
+    //               << current->data.size() << "x"
+    //               << current->data[0].size() << "x" 
+    //               << current->data[0][0].size() << "x"
+    //               << current->data[0][0][0].size() << std::endl;
+        
+    //     std::cout << "First few values: ";
+    //     if(!current->data.empty() && !current->data[0].empty() && 
+    //        !current->data[0][0].empty() && !current->data[0][0][0].empty()) {
+    //         for(int j = 0; j < std::min(5, (int)current->data[0][0][0].size()); j++) {
+    //             std::cout << current->data[0][0][0][j] << " ";
+    //         }
+    //     }
+    //     std::cout << std::endl;
+    // }
+    
+    // return current;
 }
 
 template <typename Type>

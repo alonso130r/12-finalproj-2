@@ -23,7 +23,7 @@ template <typename Type>
 void FullyConnectedLayer<Type>::initializeParams() {
     // calculate fan in and standard deviation
     Type fan_in = static_cast<Type>(in_features);
-    Type std_dev = sqrt(static_cast<Type>(2.0) / fan_in);
+    Type std_dev = sqrt(static_cast<Type>(8.0) / fan_in);
 
     // resize weights and biases
     weights.resize(out_features, std::vector<Type>(in_features, static_cast<Type>(0.0)));
@@ -31,6 +31,7 @@ void FullyConnectedLayer<Type>::initializeParams() {
 
     dWeights.resize(out_features, std::vector<Type>(in_features, static_cast<Type>(0.0)));
     dBiases.resize(out_features, static_cast<Type>(0.0));
+
 
     // thread-safe random initialization
     #pragma omp parallel
@@ -44,7 +45,7 @@ void FullyConnectedLayer<Type>::initializeParams() {
             for (int j = 0; j < in_features; ++j) {
                 weights[i][j] = dist(gen);
             }
-            biases[i] = static_cast<Type>(0.0);
+            biases[i] = dist(gen) * static_cast<Type>(0.1);
         }
     }
 }

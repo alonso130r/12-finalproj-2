@@ -20,3 +20,8 @@ void Tensor<Type>::zeroGrad() {
         }
     }
 }
+
+template <typename Type>
+void Tensor<Type>::setValue(size_t b, size_t c, size_t h, size_t w, Type value) {
+    data[b][c][h][w] = value;
+}

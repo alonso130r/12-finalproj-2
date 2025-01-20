@@ -25,6 +25,8 @@ public:
     Tensor(int batch_size, int channels, int height, int width, Type value = 0.0);
 
     void zeroGrad(); // to clear the gradients
+
+    void setValue(size_t b, size_t c, size_t h, size_t w, Type value);
 };
 
 #include "Tensor.tpp"

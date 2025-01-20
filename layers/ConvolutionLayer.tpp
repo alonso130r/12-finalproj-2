@@ -26,7 +26,7 @@ template <typename Type>
 void ConvolutionLayer<Type>::initializeFilters() {
     // calculate fan in and standard deviation
     int fan_in = filter_height * filter_width * in_channels;
-    Type std_dev = sqrt(static_cast<Type>(2.0) / static_cast<Type>(fan_in));
+    Type std_dev = sqrt(static_cast<Type>(8.0) / static_cast<Type>(fan_in));
 
     // initialize random generators (mersenne twister engine)
     std::random_device rd;
@@ -50,7 +50,7 @@ void ConvolutionLayer<Type>::initializeFilters() {
                     }
                 }
             }
-            biases[f] = static_cast<Type>(0.0);
+            biases[f] = dist(gen) * static_cast<Type>(0.1);
         }
     }
 
