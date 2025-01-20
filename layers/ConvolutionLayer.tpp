@@ -8,6 +8,7 @@
 #include <ctime>
 #include <stdexcept>
 #include <random>
+#include <omp.h>
 
 
 template <typename Type>
@@ -29,23 +30,28 @@ void ConvolutionLayer<Type>::initializeFilters() {
 
     // initialize random generators (mersenne twister engine)
     std::random_device rd;
-    std::mt19937 gen(rd());
-    std::normal_distribution<Type> dist(static_cast<Type>(0.0), std_dev);
 
     // resize filters and biases
     filters.resize(out_channels, Tensor3D(in_channels, std::vector<std::vector<Type>>(filter_height, std::vector<Type>(filter_width, static_cast<Type>(0.0)))));
     biases.resize(out_channels, static_cast<Type>(0.0));
 
-    // initialize filters with He initialization
-    for (int f = 0; f < out_channels; ++f) {
-        for (int c = 0; c < in_channels; ++c) {
-            for (int h = 0; h < filter_height; ++h) {
-                for (int w = 0; w < filter_width; ++w) {
-                    filters[f][c][h][w] = dist(gen); // sampled from N(0, std_dev^2)
+    /// thread-safe He initialization
+    #pragma omp parallel
+    {
+        std::mt19937 gen(rd() + omp_get_thread_num());
+        std::normal_distribution<Type> dist(static_cast<Type>(0.0), std_dev);
+
+        #pragma omp for
+        for (int f = 0; f < out_channels; ++f) {
+            for (int c = 0; c < in_channels; ++c) {
+                for (int h = 0; h < filter_height; ++h) {
+                    for (int w = 0; w < filter_width; ++w) {
+                        filters[f][c][h][w] = dist(gen);
+                    }
                 }
             }
+            biases[f] = static_cast<Type>(0.0);
         }
-        biases[f] = static_cast<Type>(0.0); // initialize biases to zero
     }
 
     // initialize gradients to zero
@@ -73,6 +79,7 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
 
     Tensor4D padded_input(batch_size, Tensor3D(in_channels, std::vector<std::vector<Type>>(input_height + 2 * padding, std::vector<Type>(input_width + 2 * padding, static_cast<Type>(0.0)))));
 
+    #pragma omp parallel for
     for(int n = 0; n < batch_size; ++n) {
         for(int c = 0; c < in_channels; ++c) {
             for(int h = 0; h < input_height; ++h) {
@@ -95,6 +102,7 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
     pre_activation = Tensor4D(batch_size, Tensor3D(out_channels, std::vector<std::vector<Type>>(out_height, std::vector<Type>(out_width, static_cast<Type>(0.0)))));
 
     // perform convolution for each sample in the batch
+    #pragma omp parallel for 
     for(int n = 0; n < batch_size; ++n) {
         for(int f = 0; f < out_channels; ++f) {
             for(int h = 0; h < out_height; ++h) {
@@ -118,9 +126,6 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
         }
     }
 
-    // set creator operation(for computation graph)
-//     output->creator = this;
-
     return output;
 }
 
@@ -134,45 +139,70 @@ std::vector<std::vector<std::vector<std::vector<Type>>>> ConvolutionLayer<Type>:
         throw std::invalid_argument("dOut batch size is zero.");
     }
 
+    // get dimensions
     int out_channels_dOut = dOut->data[0].size();
     int out_height = dOut->data[0][0].size();
     int out_width = dOut->data[0][0][0].size();
+    int padded_height = out_height * stride + filter_height - stride;
+    int padded_width = out_width * stride + filter_width - stride;
 
-    int input_height = stride * (out_height - 1) + filter_height - 2 * padding;
-    int input_width = stride * (out_width - 1) + filter_width - 2 * padding;
+    // prepare dInput
+    Tensor4D dPaddedInput(batch_size, Tensor3D(in_channels, 
+        std::vector<std::vector<Type>>(padded_height, std::vector<Type>(padded_width, static_cast<Type>(0.0)))));
 
-    // initialize gradients
-    dFilters.assign(out_channels, Tensor3D(in_channels,
-                                           std::vector<std::vector<Type>> (filter_height, std::vector<Type>(filter_width, static_cast<Type>(0.0)))));
-    dBiases.assign(out_channels, static_cast<Type>(0.0));
+    // zero gradients
+    #pragma omp parallel for
+    for (int f = 0; f < out_channels; ++f) {
+        dBiases[f] = static_cast<Type>(0.0);
+        for (int c = 0; c < in_channels; ++c) {
+            for (int kh = 0; kh < filter_height; ++kh) {
+                for (int kw = 0; kw < filter_width; ++kw) {
+                    dFilters[f][c][kh][kw] = static_cast<Type>(0.0);
+                }
+            }
+        }
+    }
 
-    Tensor4D dInput(batch_size, Tensor3D(in_channels,
-                                         std::vector<std::vector <Type>> (input_height + 2 * padding,
-                                                 std::vector<Type>(input_width + 2 * padding, static_cast<Type>(0.0)))));
+    // accumulate gradients
+    #pragma omp parallel
+    {
+        auto dFiltersLocal = dFilters; 
+        auto dBiasesLocal = dBiases;
 
-    // perform backward pass for each sample in the batch
-    for (int n = 0; n < batch_size; ++n) {
-        for (int f = 0; f < out_channels; ++f) {
-            for (int h = 0; h < out_height; ++h) {
-                for (int w = 0; w < out_width; ++w) {
-                    // compute derivative of relu using cached pre-activation
-                    Type pre_act = pre_activation[n][f][h][w];
-                    Type grad_activation = pre_act > 0 ? dOut->grad[n][f][h][w] : static_cast<Type>(0.0);
-
-                    // accumulate bias gradients
-                    dBiases[f] += grad_activation;
-
-                    for (int c = 0; c < in_channels; ++c) {
-                        for (int kh = 0; kh < filter_height; ++kh) {
-                            for (int kw = 0; kw < filter_width; ++kw) {
-                                int in_h = h * stride + kh;
-                                int in_w = w * stride + kw;
-                                // accumulate filter gradients
-                                dFilters[f][c][kh][kw] +=
-                                        pre_act > 0 ? dOut->grad[n][f][h][w] * dInput[n][c][in_h][in_w] : static_cast<Type>(0.0);
-                                // accumulate input gradients
-                                dInput[n][c][in_h][in_w] += filters[f][c][kh][kw] * grad_activation;
+        #pragma omp for
+        for (int n = 0; n < batch_size; ++n) {
+            for (int f = 0; f < out_channels; ++f) {
+                for (int oh = 0; oh < out_height; ++oh) {
+                    for (int ow = 0; ow < out_width; ++ow) {
+                        Type grad_val = dOut->data[n][f][oh][ow]; // if activation grad was 1, else multiply
+                        dBiasesLocal[f] += grad_val;
+                        for (int c = 0; c < in_channels; ++c) {
+                            for (int kh = 0; kh < filter_height; ++kh) {
+                                for (int kw = 0; kw < filter_width; ++kw) {
+                                    int ph = oh * stride + kh;
+                                    int pw = ow * stride + kw;
+                                    dFiltersLocal[f][c][kh][kw] += /* input[n][c][ph][pw] */ 
+                                                                    // you need stored padded input or pre_activation
+                                                                    grad_val;
+                                    // compute dPaddedInput for backprop
+                                    dPaddedInput[n][c][ph][pw] += filters[f][c][kh][kw] * grad_val;
+                                }
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        // reduce local accumulations
+        #pragma omp critical
+        {
+            for (int f = 0; f < out_channels; ++f) {
+                dBiases[f] += dBiasesLocal[f];
+                for (int c = 0; c < in_channels; ++c) {
+                    for (int kh = 0; kh < filter_height; ++kh) {
+                        for (int kw = 0; kw < filter_width; ++kw) {
+                            dFilters[f][c][kh][kw] += dFiltersLocal[f][c][kh][kw];
                         }
                     }
                 }
@@ -180,22 +210,23 @@ std::vector<std::vector<std::vector<std::vector<Type>>>> ConvolutionLayer<Type>:
         }
     }
 
-    // remove padding from dInput if necessary
-    if (padding > 0) {
-        for (int n = 0; n < batch_size; ++n) {
-            for (int c = 0; c < in_channels; ++c) {
-                for (int h = 0; h < input_height; ++h) {
-                    for (int w = 0; w < input_width; ++w) {
-                        dOut->grad[n][c][h][w] = dInput[n][c][h + padding][w + padding];
-                    }
+    // remove any padding from dPaddedInput
+    std::vector<std::vector<std::vector<std::vector<Type>>>> dInput(batch_size,
+        std::vector<std::vector<std::vector<Type>>>(in_channels,
+        std::vector<std::vector<Type>>(padded_height - 2 * padding,
+        std::vector<Type>(padded_width - 2 * padding, static_cast<Type>(0.0)))));
+
+    #pragma omp parallel for
+    for (int n = 0; n < batch_size; ++n) {
+        for (int c = 0; c < in_channels; ++c) {
+            for (int h = 0; h < static_cast<int>(dInput[n][c].size()); ++h) {
+                for (int w = 0; w < static_cast<int>(dInput[n][c][h].size()); ++w) {
+                    dInput[n][c][h][w] = dPaddedInput[n][c][h + padding][w + padding];
                 }
             }
         }
-    } else {
-        dOut->grad = dInput;
     }
-
-    return dOut->grad;
+    return dInput;
 }
 
 template <typename Type>

@@ -145,10 +145,34 @@ void ModularCNN<Type>::update(AMSGrad<Type>& optimizer) {
     for(auto &layerPtr : layers) {
         if (layerTypes[index] == "conv") {
             auto *temp = dynamic_cast<ConvolutionLayer<Type>*>(layerPtr.get());
+            if (!temp) {
+                throw std::invalid_argument("Layer cast to ConvolutionLayer failed.");
+            }
+
+            // Verify dBiases size matches out_channels
+            size_t out_channels = temp->filters.size();
+            if (temp->dBiases.size() != out_channels) {
+                throw std::out_of_range(
+                    "dBiases size (" + std::to_string(temp->dBiases.size()) +
+                    ") does not match out_channels (" + std::to_string(out_channels) + ") in ConvolutionLayer."
+                );
+            }
             optimizer.update(*temp, temp->dFilters, temp->dBiases);
         }
         if (layerTypes[index] == "fc") {
             auto *temp = dynamic_cast<FullyConnectedLayer<Type>*>(layerPtr.get());
+            if (!temp) {
+                throw std::invalid_argument("Layer cast to FullyConnectedLayer failed.");
+            }
+
+            // Verify dBiases size matches out_features
+            size_t out_features = temp->out_features;
+            if (temp->dBiases.size() != out_features) {
+                throw std::out_of_range(
+                    "dBiases size (" + std::to_string(temp->dBiases.size()) +
+                    ") does not match out_features (" + std::to_string(out_features) + ") in FullyConnectedLayer."
+                );
+            }
             optimizer.update(*temp, temp->dWeights, temp->dBiases);
         }
         index++;

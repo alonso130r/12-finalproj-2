@@ -124,7 +124,7 @@ def labels_to_tensor(labels_array, TensorClass):
     if not issubclass(labels_array.dtype.type, np.integer):
         raise TypeError("labels_array must contain integer values")
     batch_size = labels_array.shape[0]
-    channels, height, width = 1, 1, 1
+    channels, height, width = 3, 1, 1
     tensor_labels = TensorClass(batch_size, channels, height, width, 0.0)
     data = tensor_labels.data
     for b in range(batch_size):
@@ -136,17 +136,19 @@ def labels_to_tensor(labels_array, TensorClass):
 optimizer = ModularCNN.AMSGrad(1e-4, 0.965, 0.999, 1e-8, 1e-2)
 criterion = ModularCNN.CrossEntropy(True)
 layers = [
-    ModularCNN.LayerConfig.conv(3, 16, 3, 3, 1, 1),
-    ModularCNN.LayerConfig.pool(2, 2, 1, 1),
-    ModularCNN.LayerConfig.conv(16, 32, 3, 3, 1, 1),
-    ModularCNN.LayerConfig.pool(2, 2, 1, 1),
-    ModularCNN.LayerConfig.conv(32, 64, 3, 3, 1, 1),
-    ModularCNN.LayerConfig.pool(2, 2, 1, 1),
-    ModularCNN.LayerConfig.fc(64 * 32 * 32, 128),
-    ModularCNN.LayerConfig.fc(128, 3)
+    ModularCNN.LayerConfig.conv(3, 4, 3, 3, 1, 1),
+    ModularCNN.LayerConfig.pool(2, 2, 2, 0),
+    ModularCNN.LayerConfig.conv(4, 8, 3, 3, 1, 1),
+    ModularCNN.LayerConfig.pool(2, 2, 2, 0),
+    ModularCNN.LayerConfig.conv(8, 16, 3, 3, 1, 1),
+    ModularCNN.LayerConfig.pool(2, 2, 2, 0),
+    ModularCNN.LayerConfig.fc(16384, 64),
+    ModularCNN.LayerConfig.fc(64, 3)
 ]
 
 model = ModularCNN.ModularCNN(layers)
+
+print(f"Number of parameters: {model.getTotalParams()}")
 print("Training model")
 
 # Training and evaluation loops
@@ -169,12 +171,28 @@ for epoch in range(num_epochs):
         # print(len(images.data[0][0][0]))
 
         predictions = model.forward(images)
+        # print("Predictions")
+        # print(len(predictions.data))
+        # print(len(predictions.data[0]))
+        # print(len(predictions.data[0][0]))
+        # print(len(predictions.data[0][0][0]))
+        # print("Labels")
+        # print(len(labels.data))
+        # print(len(labels.data[0]))
+        # print(len(labels.data[0][0]))
+        # print(len(labels.data[0][0][0]))
         loss = criterion.forward(predictions, labels)
-        grad = criterion.backward(predictions, labels)
+        criterion.backward(predictions, labels)
 
-        model.backward(grad)
+        # print("Grad")
+        # print(len(grad.data))
+        # print(len(grad.data[0]))
+        # print(len(grad.data[0][0]))
+        # print(len(grad.data[0][0][0]))
+
+        model.backward(predictions)
         model.update(optimizer)
-        model.zero_grad()
+        model.zeroGrad()
 
         train_iter.set_postfix(loss=loss)
 
