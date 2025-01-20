@@ -23,6 +23,8 @@ private:
     // indices of maxima for each pooling window
     std::vector<std::vector<std::vector<std::vector<std::pair<int, int>>>>> max_indices;
 
+    std::shared_ptr<Tensor<Type>> inputs;
+
 public:
     MaxPoolingOperation(int pool_height, int pool_width, int stride = 1, int padding = 0);
 

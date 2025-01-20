@@ -48,7 +48,8 @@ PYBIND11_MODULE(ModularCNN, m) {
             .def_readwrite("data", &Tensor<bfloat>::data)
             .def_readwrite("grad", &Tensor<bfloat>::grad)
             .def_readwrite("creator", &Tensor<bfloat>::creator)
-            .def("zeroGrad", &Tensor<bfloat>::zeroGrad);
+            .def("zeroGrad", &Tensor<bfloat>::zeroGrad)
+            .def("setValue", &Tensor<bfloat>::setValue);;
 
     class_<Layer<bfloat>, std::shared_ptr<Layer<bfloat>>>(m, "Layer")
         .def("getNumParams", &Layer<bfloat>::getNumParams)

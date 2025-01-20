@@ -103,32 +103,29 @@ def numpy_to_tensor(np_array, TensorClass):
     batch_size, channels, height, width = np_array.shape
 
     tensor_obj = TensorClass(batch_size, channels, height, width, 0.0)
-    data = tensor_obj.data  # Exposed via pybind11
     for b in range(batch_size):
         for c in range(channels):
             for h in range(height):
                 for w in range(width):
-                    data[b][c][h][w] = float(np_array[b, c, h, w])
+                    tensor_obj.setValue(b, c, h, w, np_array[b, c, h, w])
     return tensor_obj
 
 
-
 def labels_to_tensor(labels_array, TensorClass):
-    """
-    Converts a 1D NumPy array of integer labels to a Tensor object.
-    """
-    if not isinstance(labels_array, np.ndarray):
-        raise TypeError("labels_array must be a NumPy array")
-    if labels_array.ndim != 1:
-        raise ValueError("labels_array must be a 1D array of labels")
-    if not issubclass(labels_array.dtype.type, np.integer):
-        raise TypeError("labels_array must contain integer values")
+    """Convert labels to one-hot encoded tensor"""
     batch_size = labels_array.shape[0]
-    channels, height, width = 1, 1, 1
+    channels, height, width = 3, 1, 1
+    
+    # Create tensor
     tensor_labels = TensorClass(batch_size, channels, height, width, 0.0)
-    data = tensor_labels.data
+    
+    # Fill one-hot encoded values using setter
     for b in range(batch_size):
-        data[b][0][0][0] = float(labels_array[b])
+        label = int(labels_array[b])
+        if label < 0 or label >= channels:
+            raise ValueError(f"Label {label} at index {b} is invalid")
+        tensor_labels.setValue(b, label, 0, 0, 1.0)
+    
     return tensor_labels
 
 
@@ -136,17 +133,19 @@ def labels_to_tensor(labels_array, TensorClass):
 optimizer = ModularCNN.AMSGrad(1e-4, 0.965, 0.999, 1e-8, 1e-2)
 criterion = ModularCNN.CrossEntropy(True)
 layers = [
-    ModularCNN.LayerConfig.conv(3, 16, 3, 3, 1, 1),
-    ModularCNN.LayerConfig.pool(2, 2, 1, 1),
-    ModularCNN.LayerConfig.conv(16, 32, 3, 3, 1, 1),
-    ModularCNN.LayerConfig.pool(2, 2, 1, 1),
-    ModularCNN.LayerConfig.conv(32, 64, 3, 3, 1, 1),
-    ModularCNN.LayerConfig.pool(2, 2, 1, 1),
-    ModularCNN.LayerConfig.fc(64 * 32 * 32, 128),
-    ModularCNN.LayerConfig.fc(128, 3)
+    ModularCNN.LayerConfig.conv(3, 4, 3, 3, 1, 1),
+    ModularCNN.LayerConfig.pool(2, 2, 2, 0),
+    ModularCNN.LayerConfig.conv(4, 8, 3, 3, 1, 1),
+    ModularCNN.LayerConfig.pool(2, 2, 2, 0),
+    ModularCNN.LayerConfig.conv(8, 16, 3, 3, 1, 1),
+    ModularCNN.LayerConfig.pool(2, 2, 2, 0),
+    ModularCNN.LayerConfig.fc(16384, 64),
+    ModularCNN.LayerConfig.fc(64, 3)
 ]
 
 model = ModularCNN.ModularCNN(layers)
+
+print(f"Number of parameters: {model.getTotalParams()}")
 print("Training model")
 
 # Training and evaluation loops
@@ -157,24 +156,35 @@ for epoch in range(num_epochs):
         images = batch["image"]
         labels = batch["label"]
 
+        # print(labels)
+
         # labels = np.array(labels)
 
         # Convert NumPy images/labels to your custom Tensors
         images = numpy_to_tensor(images, ModularCNN.Tensor)
         labels = labels_to_tensor(labels, ModularCNN.Tensor)
 
-        # print(len(images.data))
-        # print(len(images.data[0]))
-        # print(len(images.data[0][0]))
-        # print(len(images.data[0][0][0]))
+        # print(images.data)
 
         predictions = model.forward(images)
-        loss = criterion.forward(predictions, labels)
-        grad = criterion.backward(predictions, labels)
 
-        model.backward(grad)
+        # print("Predictions")
+        # print(predictions.data)
+
+        # print("Labels")
+        # print(labels.data)
+        loss = criterion.forward(predictions, labels)
+        criterion.backward(predictions, labels)
+
+        # print("Grad")
+        # print(len(grad.data))
+        # print(len(grad.data[0]))
+        # print(len(grad.data[0][0]))
+        # print(len(grad.data[0][0][0]))
+
+        model.backward(predictions)
         model.update(optimizer)
-        model.zero_grad()
+        model.zeroGrad()
 
         train_iter.set_postfix(loss=loss)
 
