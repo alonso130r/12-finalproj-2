@@ -30,11 +30,11 @@ public:
 
     void initializeParams();
 
-    void zeroGrad();
+    void zeroGrad() override;
 
     std::shared_ptr<WeightStruct<Type>> saveWeights() override;
 
-    [[nodiscard]] ssize_t getNumParams() const;
+    [[nodiscard]] ssize_t getNumParams() const override;
 };
 
 #include "FullyConnectedLayer.tpp"
