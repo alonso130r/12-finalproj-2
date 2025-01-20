@@ -1,131 +1,172 @@
 import ModularCNN
-import datasets
-from datasets import load_dataset
+from datasets import load_dataset, Dataset, DatasetDict
 from PIL import Image
 import numpy as np
 from tqdm import tqdm
 
+# Configuration
 batch_size = 32
 num_epochs = 10
 save_dir = "models/train_0.bin"
 
+# Load the full dataset
 ds = load_dataset("AlvaroVasquezAI/Animal_Image_Classification_Dataset")
 
-dataset = ds["train"].train_test_split(test_size=0.1, seed=42)
+def convert_image_to_array(example):
+    """
+    Convert the PIL Image in the example to a NumPy array.
+    If the image isn’t in RGB mode, convert it first.
+    """
+    try:
+        image = example["image"]
+        if image.mode != "RGB":
+            image = image.convert("RGB")
+        image_array = np.array(image)
+        example["image"] = image_array
+        return example
+    except Exception as e:
+        print(f"Error processing example: {e}")
+        return None
+
+def transform_dataset(dataset):
+    """
+    Process all examples in the dataset with a Python loop,
+    applying the convert_image_to_array transformation.
+    Returns a new Dataset with the transformed examples.
+    """
+    transformed_examples = []
+    for idx in tqdm(range(len(dataset)), desc="Transforming dataset"):
+        example = dataset[idx]
+        new_example = convert_image_to_array(example)
+        # Optionally: Skip any examples that cause an error.
+        if new_example is not None:
+            transformed_examples.append(new_example)
+
+    if len(transformed_examples) == 0:
+        raise ValueError("No transformed examples were produced.")
+
+    # Reconstruct the dataset using the original features (if available)
+    columns = transformed_examples[0].keys()
+    data_dict = {column: [example[column] for example in transformed_examples]
+                 for column in columns}
+    new_dataset = Dataset.from_dict(data_dict, features=dataset.features)
+    return new_dataset
 
 
+# First, transform the entire dataset (un-split)
+transformed_full_dataset = ds["train"]  # transform_dataset(ds["train"])
+
+# Now perform a train/test split on the transformed dataset
+split_ds = transformed_full_dataset.train_test_split(test_size=0.1, seed=24)
+
+# Create a DatasetDict to hold both splits
+dataset = DatasetDict({
+    "train": split_ds["train"],
+    "test": split_ds["test"]
+})
+
+print("Dataset preprocessed")
+print("Initializing model")
+
+# Set training and testing splits from our new dataset
+train_ds = dataset["train"]
+test_ds = dataset["test"]
+
+# print(f"sample input dimensions: {train_ds[0]['image'].shape}")
+
+train_ds.set_format(type="numpy", columns=["image", "label"])
+test_ds.set_format(type="numpy", columns=["image", "label"])
+
+# img = train_ds[-1]["image"]
+# print(type(img))
+
+# Define your custom tensor conversion functions
 def numpy_to_tensor(np_array, TensorClass):
     """
-    Converts a NumPy array of shape (batch_size, channels, height, width)
+    Converts a NumPy array of shape (batch_size, height, width, channels)
     to a Tensor object using the exposed TensorClass from C++.
-
-    Parameters:
-        np_array (np.ndarray): The input NumPy array.
-        TensorClass: The Tensor class from your pybind11 module.
-
-    Returns:
-        An instance of TensorClass containing the same data.
+    If the images are in HWC order, transpose them to CHW.
     """
-    # Ensure the array is C-contiguous and of type float (or the type used by your Tensor)
-    np_array = np.ascontiguousarray(np_array, dtype=np.float32)
-
-    # Get the shape of the numpy array
+    # If np_array.shape is (batch, height, width, channels), transpose to (batch, channels, height, width)
     if np_array.ndim != 4:
-        raise ValueError("Input array must have shape (batch_size, channels, height, width)")
+        raise ValueError("Input array must have 4 dimensions")
 
+    # Check whether the last dimension is 3 or 1 (commonly the number of channels for an image)
+    # and assume that if it's 3 (or 1) and not in the expected CHW order, we transpose it.
+    batch_size, d2, d3, d4 = np_array.shape
+    # A simple heuristic: if the last dimension is 3 or 1, and the second dimension is large (e.g., 256)
+    # then the array is likely in HWC order.
+    if d4 in (1, 3) and d2 > 10:
+        np_array = np_array.transpose(0, 3, 1, 2)  # Rearranged to (batch, channels, height, width)
+
+    np_array = np.ascontiguousarray(np_array, dtype=np.float32)
     batch_size, channels, height, width = np_array.shape
 
-    # Create a new Tensor object with the given dimensions.
-    # The constructor takes: (batch_size, channels, height, width, value)
-    # We set value=0.0 since we'll fill it from the numpy array.
     tensor_obj = TensorClass(batch_size, channels, height, width, 0.0)
-
-    # Fill the tensor's internal data structure.
-    # Assuming that tensor_obj.data is a nested structure: data[batch][channel][row][col].
-    # This loop copies the data from the numpy array to the tensor.
     data = tensor_obj.data  # Exposed via pybind11
     for b in range(batch_size):
         for c in range(channels):
             for h in range(height):
                 for w in range(width):
                     data[b][c][h][w] = float(np_array[b, c, h, w])
-
     return tensor_obj
+
 
 
 def labels_to_tensor(labels_array, TensorClass):
     """
-    Converts a NumPy array of labels to a Tensor object.
-
-    Parameters:
-        labels_array (np.ndarray): A 1D NumPy array of integer labels with shape (batch_size,).
-        TensorClass: The Tensor class exposed from your pybind11 module.
-
-    Returns:
-        TensorClass: An instance of Tensor containing the labels.
+    Converts a 1D NumPy array of integer labels to a Tensor object.
     """
-    # Ensure the input is a 1D NumPy array of integers
     if not isinstance(labels_array, np.ndarray):
         raise TypeError("labels_array must be a NumPy array")
     if labels_array.ndim != 1:
         raise ValueError("labels_array must be a 1D array of labels")
     if not issubclass(labels_array.dtype.type, np.integer):
         raise TypeError("labels_array must contain integer values")
-
-    # Extract batch size
     batch_size = labels_array.shape[0]
-
-    # Define the tensor dimensions for labels: (batch_size, 1, 1, 1)
     channels, height, width = 1, 1, 1
-
-    # Create a Tensor object with the specified dimensions, initialized to 0.0
     tensor_labels = TensorClass(batch_size, channels, height, width, 0.0)
-
-    # Access the tensor's data member
-    data = tensor_labels.data  # Assuming 'data' is exposed via pybind11
-
-    # Populate the tensor with label values
+    data = tensor_labels.data
     for b in range(batch_size):
-        data[b][0][0][0] = float(labels_array[b])  # Convert integer label to float
-
+        data[b][0][0][0] = float(labels_array[b])
     return tensor_labels
 
 
-def convert_image_to_array(example):
-    image = example["image"]
+# Initialize model, optimizer, criterion, and layer configurations
+optimizer = ModularCNN.AMSGrad(1e-4, 0.965, 0.999, 1e-8, 1e-2)
+criterion = ModularCNN.CrossEntropy(True)
+layers = [
+    ModularCNN.LayerConfig.conv(3, 16, 3, 3, 1, 1),
+    ModularCNN.LayerConfig.pool(2, 2, 1, 1),
+    ModularCNN.LayerConfig.conv(16, 32, 3, 3, 1, 1),
+    ModularCNN.LayerConfig.pool(2, 2, 1, 1),
+    ModularCNN.LayerConfig.conv(32, 64, 3, 3, 1, 1),
+    ModularCNN.LayerConfig.pool(2, 2, 1, 1),
+    ModularCNN.LayerConfig.fc(64 * 32 * 32, 128),
+    ModularCNN.LayerConfig.fc(128, 3)
+]
 
-    if image.mode != "RGB":
-        image = image.convert("RGB")
+model = ModularCNN.ModularCNN(layers)
+print("Training model")
 
-    image_array = np.array(image)
-
-    example["image"] = image_array
-    return example
-
-
-dataset.map(convert_image_to_array, batched=True)
-
-train_ds = dataset["train"]
-test_ds = dataset["test"]
-
-optimizer = ModularCNN.AMSGrad(lr=1e-4, b1=0.965, b2=0.999, eps=1e-8, wd=1e-2)
-criterion = ModularCNN.CrossEntropy()
-
-layers = [ModularCNN.LayerConfig.conv(3, 16, 3, 3, 1, 1), ModularCNN.LayerConfig.pool(2, 2, 1, 1),
-          ModularCNN.LayerConfig.conv(16, 32, 3, 3, 1, 1), ModularCNN.LayerConfig.pool(2, 2, 1, 1),
-          ModularCNN.LayerConfig.conv(32, 64, 3, 3, 1, 1), ModularCNN.LayerConfig.pool(2, 2, 1, 1),
-          ModularCNN.LayerConfig.fc(64 * 32 * 32, 128), ModularCNN.LayerConfig.fc(128, 3)]
-
-model = ModularCNN.Model(layers)
-
+# Training and evaluation loops
 for epoch in range(num_epochs):
-    itera = tqdm(train_ds.iter(batch_size=batch_size))
-    for batch in itera:
+    # Training loop
+    train_iter = tqdm(train_ds.iter(batch_size=batch_size), desc=f"Epoch {epoch+1} (Train)")
+    for batch in train_iter:
         images = batch["image"]
         labels = batch["label"]
 
+        # labels = np.array(labels)
+
+        # Convert NumPy images/labels to your custom Tensors
         images = numpy_to_tensor(images, ModularCNN.Tensor)
         labels = labels_to_tensor(labels, ModularCNN.Tensor)
+
+        # print(len(images.data))
+        # print(len(images.data[0]))
+        # print(len(images.data[0][0]))
+        # print(len(images.data[0][0][0]))
 
         predictions = model.forward(images)
         loss = criterion.forward(predictions, labels)
@@ -135,23 +176,25 @@ for epoch in range(num_epochs):
         model.update(optimizer)
         model.zero_grad()
 
-        itera.set_postfix(loss=loss)
+        train_iter.set_postfix(loss=loss)
 
+    # Evaluation loop
     cuml_loss = 0
-    for batch in tqdm(test_ds.iter(batch_size=batch_size)):
+    test_iter = tqdm(test_ds.iter(batch_size=batch_size), desc=f"Epoch {epoch+1} (Test)")
+    for batch in test_iter:
         images = batch["image"]
         labels = batch["label"]
+
+        # labels = np.array(labels)
 
         images = numpy_to_tensor(images, ModularCNN.Tensor)
         labels = labels_to_tensor(labels, ModularCNN.Tensor)
 
         predictions = model.forward(images)
         loss = criterion.forward(predictions, labels)
-
         cuml_loss += loss
 
-        itera.set_postfix(loss=loss)
+    print(f"Epoch {epoch+1}, Eval Loss: {cuml_loss}")
 
-    print(f"Epoch {epoch + 1}, Eval Loss: {cuml_loss}")
-
+# Save the final model weights
 model.saveWeights(save_dir)
