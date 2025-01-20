@@ -54,6 +54,7 @@ std::shared_ptr<Tensor<Type>> FullyConnectedOperation<Type>::forward(const std::
         std::vector<Type> x = flattenSample(input->data, n);
         for(int out_i = 0; out_i < fcLayer.out_features; ++out_i) {
             Type sum = fcLayer.biases[out_i];
+            #pragma omp simd reduction(+:sum)
             for(int in_j = 0; in_j < fcLayer.in_features; ++in_j) {
                 sum += fcLayer.weights[out_i][in_j] * x[in_j];
             }
@@ -159,9 +160,10 @@ std::shared_ptr<Tensor<Type>> FullyConnectedOperation<Type>::backward(const std:
             Type go = output_grad->grad.at(n).at(out_i).at(0).at(0); // problem line
             dBiases_local[thread_id].at(out_i) += go;
 
+            #pragma omp simd
             for(int in_j = 0; in_j < fcLayer.in_features; ++in_j) {
                 // Removed redundant in_j range check
-                dWeights_local[thread_id].at(out_i).at(in_j) += go * x.at(in_j);
+                dWeights_local[thread_id][out_i][in_j] += go * x[in_j];
 
                 // Compute mapping from in_j to channel, height, and width
                 int channel_idx = in_j / (height * width);
@@ -174,7 +176,7 @@ std::shared_ptr<Tensor<Type>> FullyConnectedOperation<Type>::backward(const std:
                     throw std::out_of_range("channel_idx, h, or w out of range.");
                 }
 
-                dInput_local[thread_id][n][channel_idx][hw_reduced] += fcLayer.weights.at(out_i).at(in_j) * go;
+                dInput_local[thread_id][n][channel_idx][hw_reduced] += fcLayer.weights[out_i][in_j] * go;
             }
         }
     }

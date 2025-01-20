@@ -110,6 +110,7 @@ std::shared_ptr<Tensor<Type>> ConvolutionLayer<Type>::forward(const std::shared_
                     Type sum = static_cast<Type>(0.0);
                     for(int c = 0; c < in_channels; ++c) {
                         for(int kh = 0; kh < filter_height; ++kh) {
+                            #pragma omp simd reduction(+:sum)
                             for(int kw = 0; kw < filter_width; ++kw) {
                                 int in_h = h * stride + kh;
                                 int in_w = w * stride + kw;

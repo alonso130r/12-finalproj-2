@@ -168,8 +168,8 @@ for epoch in range(num_epochs):
 
         predictions = model.forward(images)
 
-        print("Predictions")
-        print(predictions.data)
+        # print("Predictions")
+        # print(predictions.data)
 
         # print("Labels")
         # print(labels.data)

@@ -122,32 +122,32 @@ std::shared_ptr<Tensor<Type>> ModularCNN<Type>::forward(const std::shared_ptr<Te
     auto output = graph.forward(input);
 
     // Process each batch
-    for (auto& batch : output->data) {
-        // Extract logits
-        std::vector<Type> logits(batch.size());
-        for (size_t i = 0; i < batch.size(); i++) {
-            logits[i] = batch[i][0][0];
-        }
+   for (auto& batch : output->data) {
+    // Pre-allocate vectors to avoid reallocation
+    std::vector<Type> logits(batch.size());
+    std::vector<Type> scaled(batch.size());
 
-        // Find max for numerical stability
-        Type maxVal = *std::max_element(logits.begin(), logits.end());
-        
-        // Scale values to prevent overflow
-        std::vector<Type> scaled(logits.size());
-        Type sum = 0;
-        for (size_t i = 0; i < logits.size(); i++) {
-            // Add small epsilon to prevent division by zero
-            scaled[i] = std::exp((logits[i] - maxVal) / Type(100.0) + Type(1e-7));
-            sum += scaled[i];
-        }
-
-        // Normalize and store back
-        for (size_t i = 0; i < batch.size(); i++) {
-            batch[i][0][0] = scaled[i] / sum;
-        }
+    // Direct indexing instead of push_back
+    for (size_t i = 0; i < batch.size(); i++) {
+        logits[i] = batch[i][0][0];
     }
 
-    return output;
+    Type maxVal = *std::max_element(logits.begin(), logits.end());
+    Type sum = 0;
+
+    // Combine loops to minimize memory access
+    for (size_t i = 0; i < logits.size(); i++) {
+        scaled[i] = std::exp((logits[i] - maxVal) / Type(100.0) + Type(1e-7));
+        sum += scaled[i];
+    }
+
+    // Single pass for normalization
+    for (size_t i = 0; i < batch.size(); i++) {
+        batch[i][0][0] = scaled[i] / sum;
+    }
+}
+
+return output;
 }
 
 template <typename Type>

@@ -49,7 +49,8 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::forward(const std::shar
                     Type max_val = -std::numeric_limits<Type>::infinity();
                     std::pair<int, int> max_pos = {h_start, w_start};
 
-                    // iterate over the pooling window to find the max value and its position
+                    // Vectorizable loop
+                    #pragma omp simd reduction(max:max_val)
                     for(int ph = h_start; ph < h_end; ++ph) {
                         for(int pw = w_start; pw < w_end; ++pw) {
                             if(input->data[n][c][ph][pw] > max_val) {
@@ -190,15 +191,12 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::sha
     for(int n = 0; n < batch_size; ++n) {
         for(int c = 0; c < channels; ++c) {
             for(int h = 0; h < out_height; ++h) {
+                Type* row = &dInput_padded[n][c][h][0];
+                #pragma omp simd
                 for(int w = 0; w < out_width; ++w) {
-                    // position of the max value from the forward pass
                     std::pair<int, int> max_pos = max_indices[n][c][h][w];
-                    int ph = max_pos.first;
-                    int pw = max_pos.second;
-
-                    // Accumulate the gradient
                     #pragma omp atomic
-                    dInput_padded[n][c][ph][pw] += output_grad->grad[n][c][h][w];
+                    dInput_padded[n][c][max_pos.first][max_pos.second] += output_grad->grad[n][c][h][w];
                 }
             }
         }
@@ -209,13 +207,15 @@ std::shared_ptr<Tensor<Type>> MaxPoolingOperation<Type>::backward(const std::sha
         Tensor4D dInput_unpadded(batch_size, Tensor3D(channels, std::vector<std::vector<Type>>(
                 input_height_calc, std::vector<Type>(input_width_calc, static_cast<Type>(0.0)))));
 
-        // Parallelize the unpadding process
         #pragma omp parallel for collapse(2)
         for(int n = 0; n < batch_size; ++n) {
             for(int c = 0; c < channels; ++c) {
                 for(int h = 0; h < input_height_calc; ++h) {
+                    Type* dst_row = &dInput_unpadded[n][c][h][0];
+                    Type* src_row = &dInput_padded[n][c][h + padding][0];
+                    #pragma omp simd
                     for(int w = 0; w < input_width_calc; ++w) {
-                        dInput_unpadded[n][c][h][w] = dInput_padded[n][c][h + padding][w + padding];
+                        dst_row[w] = src_row[w + padding];
                     }
                 }
             }

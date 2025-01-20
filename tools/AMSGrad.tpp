@@ -243,6 +243,7 @@ void AMSGrad<Type>::update(FullyConnectedLayer<Type> &layer,
     #pragma omp parallel for collapse(1) shared(has_error, error_message)
     for(int i = 0; i < out_features; ++i) {
         try {
+            #pragma omp simd
             for(int j = 0; j < in_features; ++j) {
                 Type g = dWeights.at(i).at(j);
                 // Adam moments
