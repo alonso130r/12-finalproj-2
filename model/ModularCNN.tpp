@@ -215,6 +215,7 @@ void ModularCNN<Type>::zeroGrad() {
     }
 }
 
+// Count all parameters
 template <typename Type>
 ssize_t ModularCNN<Type>::getTotalParams() const {
     ssize_t total = 0;
@@ -224,6 +225,7 @@ ssize_t ModularCNN<Type>::getTotalParams() const {
     return total;
 }
 
+// Save all weights to a bin file
 template <typename Type>
 void ModularCNN<Type>::saveWeights(const std::string path) {
     std::vector<std::shared_ptr<WeightStruct<Type>>> weights;
@@ -249,3 +251,4 @@ void ModularCNN<Type>::saveWeights(const std::string path) {
     }
     file.close();
 }
+
